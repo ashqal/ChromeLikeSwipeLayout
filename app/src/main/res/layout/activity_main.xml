@@ -6,10 +6,39 @@
     tools:context="com.asha.chromelikeswipelayout.MainActivity">
     <com.asha.library.ChromeLikeSwipeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-        <View
-            android:background="#999174"
+        android:layout_height="match_parent"
+        android:background="#ffeda9"
+        >
+        <ScrollView
+            android:id="@+id/scroll_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent" >
+
+            <LinearLayout
+                android:id="@+id/linear_layout"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:background="#ffceaaaa"
+                    android:gravity="center"
+                    android:text="I am in ScrollView" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:background="#ffceaaaa"
+                    android:gravity="center"
+                    android:text="I am in ScrollView" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:background="#ffceaaaa"
+                    android:gravity="center"
+                    android:text="I am in ScrollView" />
+            </LinearLayout>
+        </ScrollView>
     </com.asha.library.ChromeLikeSwipeLayout>
 </RelativeLayout>

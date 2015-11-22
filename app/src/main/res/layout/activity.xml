@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.asha.chromelikeswipelayout.MainActivity">
+    <Button
+        android:text="A"
+        android:onClick="TestA"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <Button
+        android:text="B"
+        android:onClick="TestB"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</LinearLayout>

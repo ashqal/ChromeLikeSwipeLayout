@@ -24,6 +24,7 @@ public class ChromeLikeView extends View implements ValueAnimator.AnimatorUpdate
     private Paint mCirclePaint;
     private Paint mDebugPaint;
     private Path mPath;
+    private int mSize;
 
     public ChromeLikeView(Context context) {
         super(context);
@@ -62,8 +63,9 @@ public class ChromeLikeView extends View implements ValueAnimator.AnimatorUpdate
         mDebugPaint.setStyle(Paint.Style.FILL);
         mDebugPaint.setAntiAlias(true);
 
-        mPath = new Path();
+        mSize = 3;
 
+        mPath = new Path();
         //PathMeasure measure = new PathMeasure();
         //measure.setPath(mPath,false);
         mCurrentFlag = 1;
@@ -81,7 +83,7 @@ public class ChromeLikeView extends View implements ValueAnimator.AnimatorUpdate
         if ( animate ){
             if ( Math.abs( mDegrees - tempDegree ) > 5 ) distance = -distance;
         } else {
-            //if ( distance < radius/2 ) distance = 0;
+            //if ( distance < mTouchSlop ) distance = 0;
             mDegrees = tempDegree;
         }
         float realLong = radius  + distance;
@@ -122,7 +124,6 @@ public class ChromeLikeView extends View implements ValueAnimator.AnimatorUpdate
     private boolean mIsDown;
     private float mTranslate;
     private int mCurrentFlag = 1;
-    private float mDiff;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction();
@@ -136,19 +137,21 @@ public class ChromeLikeView extends View implements ValueAnimator.AnimatorUpdate
                 break;
             case MotionEvent.ACTION_MOVE:
                 if ( !mIsDown ) break;
-                if ( mAnimationStarted ) break;
+                if ( mAnimationStarted ){
+                    mAnimFromX = currentX;
+                    break;
+                }
 
                 update( currentX, currentY, mPrevX, mPrevY, false );
-                if ( Math.abs( currentX - mPrevX ) > radius*3 ){
+                if ( Math.abs( currentX - mPrevX ) > radius*2 ){
                     if ( currentX > mPrevX ){
                         mCurrentFlag++;
-                        mCurrentFlag %= 3;
+                        mCurrentFlag %= mSize;
                     } else {
                         mCurrentFlag--;
-                        mCurrentFlag += 3;
-                        mCurrentFlag %= 3;
+                        mCurrentFlag += mSize;
+                        mCurrentFlag %= mSize;
                     }
-                    mDiff = currentX;
                     launchAnim(currentX, currentY, flag2TargetTranslate(mCurrentFlag) );
                 }
                 break;

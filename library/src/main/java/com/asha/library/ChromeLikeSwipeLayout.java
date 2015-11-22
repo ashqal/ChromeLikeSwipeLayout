@@ -4,10 +4,15 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Build;
+import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.Transformation;
 
 /**
  * Created by hzqiujiadi on 15/11/20.
@@ -15,8 +20,16 @@ import android.view.ViewGroup;
  */
 public class ChromeLikeSwipeLayout extends ViewGroup {
     private static final String TAG = "ChromeLikeSwipeLayout";
+    private static final int sThreshold = 280;
+
     private View mTarget; // the target of the gesture
     private View mChromeLikeView;
+    private boolean mBeginDragging;
+    private int mPrevTopOffset;
+    private int mTopOffset;
+    private int mTouchSlop;
+    private float mTouchDownActor;
+
 
     public ChromeLikeSwipeLayout(Context context) {
         super(context);
@@ -40,8 +53,135 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     }
 
     private void init() {
+        final ViewConfiguration configuration = ViewConfiguration.get(getContext());
+        mTouchSlop = configuration.getScaledTouchSlop();
+
         mChromeLikeView = new ChromeLikeView(getContext());
-        addView(mChromeLikeView);
+        //addView(mChromeLikeView);
+    }
+
+    @Override
+    public boolean onInterceptTouchEvent(MotionEvent event)
+    {
+        float getY = event.getY();
+
+        if ( canChildDragDown() ) return false;
+
+        switch ( event.getAction()  )
+        {
+            case MotionEvent.ACTION_DOWN:
+                mBeginDragging = false;
+                mTouchDownActor = getY;
+                mPrevTopOffset = mTopOffset;
+                Log.d(TAG, String.format("onInterceptTouchEvent ACTION_DOWN"));
+                break;
+            case MotionEvent.ACTION_UP:
+                mTouchDownActor = 0;
+                mPrevTopOffset = mTopOffset;
+                mPrevTopOffset = 0;
+                mTopOffset = 0;
+                mBeginDragging = false;
+                Log.d(TAG, String.format("onInterceptTouchEvent ACTION_UP"));
+                break;
+            case MotionEvent.ACTION_MOVE:
+                mTopOffset = (int) (getY - mTouchDownActor + mPrevTopOffset);
+                Log.e(TAG, String.format("onInterceptTouchEvent ACTION_MOVE moving:%f",(getY - mTouchDownActor)));
+                if ( !mBeginDragging && getY - mTouchDownActor > mTouchSlop )
+                {
+                    mBeginDragging = true;
+                }
+                Log.d(TAG, String.format("onInterceptTouchEvent ACTION_MOVE mBeginDragging=%b",mBeginDragging));
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                Log.d(TAG, String.format("onInterceptTouchEvent ACTION_POINTER_DOWN"));
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                Log.d(TAG, String.format("onInterceptTouchEvent ACTION_POINTER_UP"));
+                break;
+        }
+        //mBeginDragging = true;
+        Log.d(TAG,String.format("onInterceptTouchEvent return %b",mBeginDragging));
+
+        return mBeginDragging;
+    }
+
+    /*
+    @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+        //first point
+        float getY = event.getY();
+
+        switch ( event.getAction() ) {
+            case MotionEvent.ACTION_DOWN:
+                Log.d(TAG, String.format("ACTION_DOWN"));
+                break;
+            case MotionEvent.ACTION_UP:
+                mBeginDragging = false;
+
+                Log.d(TAG,String.format("ACTION_UP"));
+                mTouchDownActor = 0;
+                mPrevTopOffset = mTopOffset;
+
+                //reset
+                mPrevTopOffset = 0;
+                mTopOffset = 0;
+                startAnim();
+
+                break;
+            case MotionEvent.ACTION_MOVE:
+                mTopOffset = (int) (getY - mTouchDownActor + mPrevTopOffset);
+                ensureTarget();
+                View child = mTarget;
+                int currentTop = child.getTop();
+                //Log.d(TAG, String.format("ACTION_MOVE:%d,childTop:%d,< sThreshold:%b,", mTopOffset,currentTop,currentTop <= sThreshold));
+                Log.d(TAG,String.format("ACTION_MOVE %b",mBeginDragging));
+                if ( mBeginDragging ) {
+                    if ( currentTop <= sThreshold ) {
+                        if ( mTopOffset < sThreshold ) {
+                            child.offsetTopAndBottom( mTopOffset- currentTop );
+                            Log.d(TAG,"offsetTopAndBottom  mTopOffset < sThreshold");
+                        } else {
+                            child.offsetTopAndBottom( sThreshold - currentTop );
+                            Log.d(TAG, "offsetTopAndBottom  mTopOffset >= sThreshold");
+                        }
+                    } else {
+                        child.offsetTopAndBottom( sThreshold - currentTop );
+                        Log.d(TAG, String.format("ACTION_MOVE %d - %d , 期望设置值:%d , 设置后的值:%d",sThreshold,currentTop,sThreshold - currentTop, child.getTop()));
+
+                    }
+                }
+                // requestLayout();
+                break;
+            case MotionEvent.ACTION_POINTER_DOWN:
+                Log.d(TAG,String.format("ACTION_POINTER_DOWN"));
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                Log.d(TAG,String.format("ACTION_POINTER_UP"));
+                break;
+        }
+
+        return true;
+    }
+    */
+
+    private void startAnim() {
+        ensureTarget();
+        final int from = mTarget.getTop();
+        final int to = 0;
+
+        Animation animation = new Animation() {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                //Log.e(TAG, "applyTransformation:" + interpolatedTime);
+                float step = (to - from) * interpolatedTime + from;
+                mTarget.offsetTopAndBottom((int) (step - mTarget.getTop()));
+            }
+        };
+        animation.setDuration(300);
+        mTarget.clearAnimation();
+        mTarget.startAnimation(animation);
+
     }
 
     @Override
@@ -62,15 +202,23 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         final int childTop = getPaddingTop();
         final int childWidth = width - getPaddingLeft() - getPaddingRight();
         final int childHeight = height - getPaddingTop() - getPaddingBottom();
-        child.layout(childLeft, childTop, childLeft + childWidth, childTop + childHeight);
+        child.layout(childLeft, childTop + mTopOffset, childLeft + childWidth, childTop + childHeight);
 
-        mChromeLikeView.layout(0,0,width,mChromeLikeView.getMeasuredHeight());
+        Log.e(TAG,"child.layout top:" + (childTop + mTopOffset));
+
+        mChromeLikeView.layout(0, 0, width, mChromeLikeView.getMeasuredHeight());
 
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
 
+    }
+
+    @Override
+    public void requestDisallowInterceptTouchEvent(boolean b) {
+        // Nope.
+        //super.requestDisallowInterceptTouchEvent(b);
     }
 
     @Override
@@ -92,6 +240,15 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 MeasureSpec.makeMeasureSpec(300, MeasureSpec.EXACTLY));
         Log.e(TAG,String.format("%d %d",mChromeLikeView.getMeasuredWidth(),mChromeLikeView.getMeasuredHeight()));
     }
+
+    private boolean canChildDragDown()
+    {
+        ensureTarget();
+        boolean result = ViewCompat.canScrollVertically(mTarget,-1) ;
+        Log.e(TAG,"canChildDragDown:" + result + ",scrollY:" + mTarget.getScrollY() );
+        return result ;
+    }
+
 
     private void ensureTarget() {
         // Don't bother getting the parent height if the parent hasn't been laid
