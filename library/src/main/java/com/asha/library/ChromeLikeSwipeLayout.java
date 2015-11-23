@@ -13,6 +13,8 @@ import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
+import android.widget.AbsListView;
+import android.widget.ScrollView;
 
 /**
  * Created by hzqiujiadi on 15/11/20.
@@ -60,14 +62,17 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         //addView(mChromeLikeView);
     }
 
+
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event)
     {
         float getY = event.getY();
 
+        int action = event.getAction();
+
         if ( canChildDragDown() ) return false;
 
-        switch ( event.getAction()  )
+        switch ( action & MotionEvent.ACTION_MASK  )
         {
             case MotionEvent.ACTION_DOWN:
                 mBeginDragging = false;
@@ -100,12 +105,11 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 break;
         }
         //mBeginDragging = true;
-        Log.d(TAG,String.format("onInterceptTouchEvent return %b",mBeginDragging));
+        Log.d(TAG, String.format("onInterceptTouchEvent return %b", mBeginDragging));
 
         return mBeginDragging;
     }
 
-    /*
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
@@ -163,7 +167,6 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
 
         return true;
     }
-    */
 
     private void startAnim() {
         ensureTarget();
@@ -182,6 +185,16 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         mTarget.clearAnimation();
         mTarget.startAnimation(animation);
 
+    }
+
+    @Override
+    public void addView(View child, int index, LayoutParams params) {
+        boolean touchAlwaysTrue =  child instanceof ScrollView
+                || child instanceof AbsListView
+                || child instanceof TouchAlwaysTrueLayout;
+
+        if ( !touchAlwaysTrue ) child = TouchAlwaysTrueLayout.wrap(child);
+        super.addView(child,index,params);
     }
 
     @Override
@@ -249,6 +262,12 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         return result ;
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        boolean dispatch = super.dispatchTouchEvent(ev);
+        Log.d(TAG, String.format("dispatchTouchEvent ChromeLikeSwipeLayout %d dispatch=%b", ev.getAction(), dispatch));
+        return dispatch;
+    }
 
     private void ensureTarget() {
         // Don't bother getting the parent height if the parent hasn't been laid
