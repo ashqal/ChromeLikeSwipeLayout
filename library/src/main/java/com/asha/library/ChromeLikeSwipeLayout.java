@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Transformation;
 import android.widget.AbsListView;
 import android.widget.ScrollView;
@@ -22,7 +23,7 @@ import android.widget.ScrollView;
  */
 public class ChromeLikeSwipeLayout extends ViewGroup {
     private static final String TAG = "ChromeLikeSwipeLayout";
-    private static final int sThreshold = 280;
+    private static final int sThreshold = 300;
 
     private View mTarget; // the target of the gesture
     private View mChromeLikeView;
@@ -59,7 +60,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         mTouchSlop = configuration.getScaledTouchSlop();
 
         mChromeLikeView = new ChromeLikeView(getContext());
-        //addView(mChromeLikeView);
+        addView(mChromeLikeView);
     }
 
 
@@ -143,19 +144,16 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 if ( mBeginDragging ) {
                     if ( currentTop <= sThreshold ) {
                         if ( mTopOffset < sThreshold ) {
-                            child.offsetTopAndBottom( mTopOffset- currentTop );
-                            Log.d(TAG,"offsetTopAndBottom  mTopOffset < sThreshold");
+                            childOffsetTopAndBottom(mTopOffset - currentTop);
                         } else {
-                            child.offsetTopAndBottom( sThreshold - currentTop );
-                            Log.d(TAG, "offsetTopAndBottom  mTopOffset >= sThreshold");
+                            childOffsetTopAndBottom(sThreshold - currentTop);
                         }
                     } else {
-                        child.offsetTopAndBottom( sThreshold - currentTop );
-                        Log.d(TAG, String.format("ACTION_MOVE %d - %d , 期望设置值:%d , 设置后的值:%d",sThreshold,currentTop,sThreshold - currentTop, child.getTop()));
-
+                        childOffsetTopAndBottom(sThreshold - currentTop);
                     }
                 }
-                // requestLayout();
+                invalidate();
+                //requestLayout();
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 Log.d(TAG,String.format("ACTION_POINTER_DOWN"));
@@ -168,6 +166,12 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         return true;
     }
 
+    private void childOffsetTopAndBottom(int offset){
+        mTarget.offsetTopAndBottom( offset );
+        mChromeLikeView.offsetTopAndBottom( offset );
+        mChromeLikeView.invalidate();
+    }
+
     private void startAnim() {
         ensureTarget();
         final int from = mTarget.getTop();
@@ -178,10 +182,11 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             protected void applyTransformation(float interpolatedTime, Transformation t) {
                 //Log.e(TAG, "applyTransformation:" + interpolatedTime);
                 float step = (to - from) * interpolatedTime + from;
-                mTarget.offsetTopAndBottom((int) (step - mTarget.getTop()));
+                childOffsetTopAndBottom((int) (step - mTarget.getTop()));
             }
         };
         animation.setDuration(300);
+        animation.setInterpolator(new DecelerateInterpolator());
         mTarget.clearAnimation();
         mTarget.startAnimation(animation);
 
@@ -191,7 +196,8 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     public void addView(View child, int index, LayoutParams params) {
         boolean touchAlwaysTrue =  child instanceof ScrollView
                 || child instanceof AbsListView
-                || child instanceof TouchAlwaysTrueLayout;
+                || child instanceof TouchAlwaysTrueLayout
+                || child instanceof ChromeLikeView;
 
         if ( !touchAlwaysTrue ) child = TouchAlwaysTrueLayout.wrap(child);
         super.addView(child,index,params);
@@ -210,16 +216,19 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         if (mTarget == null) {
             return;
         }
-        final View child = mTarget;
-        final int childLeft = getPaddingLeft();
-        final int childTop = getPaddingTop();
-        final int childWidth = width - getPaddingLeft() - getPaddingRight();
-        final int childHeight = height - getPaddingTop() - getPaddingBottom();
-        child.layout(childLeft, childTop + mTopOffset, childLeft + childWidth, childTop + childHeight);
+        View child = mTarget;
+        int childLeft = getPaddingLeft();
+        int childTop = getPaddingTop()+ mTopOffset;
+        int childWidth = width - getPaddingLeft() - getPaddingRight();
+        int childHeight = height - getPaddingTop() - getPaddingBottom();
+        child.layout(childLeft, childTop, childLeft + childWidth, childTop + childHeight);
 
-        Log.e(TAG,"child.layout top:" + (childTop + mTopOffset));
-
-        mChromeLikeView.layout(0, 0, width, mChromeLikeView.getMeasuredHeight());
+        child = mChromeLikeView;
+        childLeft = getPaddingLeft();
+        childTop = getPaddingTop() + mTopOffset - child.getMeasuredHeight();
+        childWidth = width - getPaddingLeft() - getPaddingRight();
+        childHeight = child.getMeasuredHeight();
+        child.layout(childLeft, childTop, childLeft + childWidth, childTop + childHeight);
 
     }
 
