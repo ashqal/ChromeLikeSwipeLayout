@@ -26,7 +26,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     private static final int sThreshold = 300;
 
     private View mTarget; // the target of the gesture
-    private View mChromeLikeView;
+    private ChromeLikeView mChromeLikeView;
     private boolean mBeginDragging;
     private int mPrevTopOffset;
     private int mTopOffset;
@@ -68,18 +68,17 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     public boolean onInterceptTouchEvent(MotionEvent event)
     {
         float getY = event.getY();
-
         int action = event.getAction();
-
         if ( canChildDragDown() ) return false;
 
-        switch ( action & MotionEvent.ACTION_MASK  )
-        {
+        switch ( action & MotionEvent.ACTION_MASK  ) {
+
             case MotionEvent.ACTION_DOWN:
                 mBeginDragging = false;
                 mTouchDownActor = getY;
                 mPrevTopOffset = mTopOffset;
                 Log.d(TAG, String.format("onInterceptTouchEvent ACTION_DOWN"));
+                mChromeLikeView.onActionDown(event);
                 break;
             case MotionEvent.ACTION_UP:
                 mTouchDownActor = 0;
@@ -119,12 +118,15 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
 
         switch ( event.getAction() ) {
             case MotionEvent.ACTION_DOWN:
-                Log.d(TAG, String.format("ACTION_DOWN"));
+                break;
+            case MotionEvent.ACTION_CANCEL:
+                mChromeLikeView.onActionUpOrCancel(event);
                 break;
             case MotionEvent.ACTION_UP:
+                mChromeLikeView.onActionUpOrCancel(event);
                 mBeginDragging = false;
 
-                Log.d(TAG,String.format("ACTION_UP"));
+                //Log.d(TAG,String.format("ACTION_UP"));
                 mTouchDownActor = 0;
                 mPrevTopOffset = mTopOffset;
 
@@ -135,12 +137,14 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
 
                 break;
             case MotionEvent.ACTION_MOVE:
+                mChromeLikeView.onActionMove(event);
+
                 mTopOffset = (int) (getY - mTouchDownActor + mPrevTopOffset);
                 ensureTarget();
                 View child = mTarget;
                 int currentTop = child.getTop();
                 //Log.d(TAG, String.format("ACTION_MOVE:%d,childTop:%d,< sThreshold:%b,", mTopOffset,currentTop,currentTop <= sThreshold));
-                Log.d(TAG,String.format("ACTION_MOVE %b",mBeginDragging));
+                //Log.d(TAG,String.format("ACTION_MOVE %b",mBeginDragging));
                 if ( mBeginDragging ) {
                     if ( currentTop <= sThreshold ) {
                         if ( mTopOffset < sThreshold ) {
@@ -156,10 +160,10 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 //requestLayout();
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
-                Log.d(TAG,String.format("ACTION_POINTER_DOWN"));
+                //Log.d(TAG,String.format("ACTION_POINTER_DOWN"));
                 break;
             case MotionEvent.ACTION_POINTER_UP:
-                Log.d(TAG,String.format("ACTION_POINTER_UP"));
+                //Log.d(TAG,String.format("ACTION_POINTER_UP"));
                 break;
         }
 
