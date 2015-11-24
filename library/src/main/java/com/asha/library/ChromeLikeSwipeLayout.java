@@ -2,7 +2,6 @@ package com.asha.library;
 
 import android.annotation.TargetApi;
 import android.content.Context;
-import android.graphics.Canvas;
 import android.os.Build;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
@@ -184,7 +183,6 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         Animation animation = new Animation() {
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
-                //Log.e(TAG, "applyTransformation:" + interpolatedTime);
                 float step = (to - from) * interpolatedTime + from;
                 childOffsetTopAndBottom((int) (step - mTarget.getTop()));
             }
@@ -237,11 +235,6 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     }
 
     @Override
-    protected void onDraw(Canvas canvas) {
-
-    }
-
-    @Override
     public void requestDisallowInterceptTouchEvent(boolean b) {
         // Nope.
         //super.requestDisallowInterceptTouchEvent(b);
@@ -273,13 +266,6 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         boolean result = ViewCompat.canScrollVertically(mTarget,-1) ;
         Log.e(TAG,"canChildDragDown:" + result + ",scrollY:" + mTarget.getScrollY() );
         return result ;
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        boolean dispatch = super.dispatchTouchEvent(ev);
-        Log.d(TAG, String.format("dispatchTouchEvent ChromeLikeSwipeLayout %d dispatch=%b", ev.getAction(), dispatch));
-        return dispatch;
     }
 
     private void ensureTarget() {
