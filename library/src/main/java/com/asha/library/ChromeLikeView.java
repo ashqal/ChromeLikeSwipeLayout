@@ -10,6 +10,7 @@ import android.support.v4.animation.AnimatorCompatHelper;
 import android.support.v4.animation.AnimatorListenerCompat;
 import android.support.v4.animation.AnimatorUpdateListenerCompat;
 import android.support.v4.animation.ValueAnimatorCompat;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,9 +24,9 @@ import android.view.animation.Interpolator;
  */
 public class ChromeLikeView extends View  {
     private static final String TAG = "ChromeLikeView";
-    private static final int radius = 80;
     private static final float sMagicNumber = 0.55228475f;
-    private static Interpolator sInterpolator = new BounceInterpolator();
+    private static Interpolator sBounceInterpolator = new BounceInterpolator();
+    private static Interpolator sInterpolator = new FastOutSlowInInterpolator();
     private Paint mPaint;
     private Paint mCirclePaint;
     private Paint mDebugPaint;
@@ -36,7 +37,9 @@ public class ChromeLikeView extends View  {
     private float mTranslate;
     private int mCurrentFlag = 1;
     private int mSize = 3;
+    private int mRadius = 80;
     private GummyAnimatorHelper mGummyAnimatorHelper = new GummyAnimatorHelper();
+    private RippleAnimatorHelper mRippleAnimatorHelper = new RippleAnimatorHelper();
 
     public ChromeLikeView(Context context) {
         super(context);
@@ -77,30 +80,24 @@ public class ChromeLikeView extends View  {
 
         mPath = new Path();
 
-        mCurrentFlag = 1;
-        mTranslate = flag2TargetTranslate(mCurrentFlag);
-        update(0, 0, false);
-
+        reset();
     }
 
     public void onActionDown(MotionEvent event){
         mIsDown = true;
-        float currentX = event.getX();
-        float currentY = event.getY();
-        mPrevX = currentX;
+        mPrevX = event.getX();
+        reset();
     }
 
     public void onActionMove(MotionEvent event){
         if ( !mIsDown ) return;
         float currentX = event.getX();
-        float currentY = event.getY();
         if ( mGummyAnimatorHelper.isAnimationStarted() ){
-            //mAnimFromX = currentX;
             mGummyAnimatorHelper.updateFromX(currentX);
             return;
         }
-        update( currentX, 0, mPrevX, 0, false );
-        if ( Math.abs( currentX - mPrevX ) > radius * 1.5 ){
+        update( currentX, mPrevX, mRadius, false );
+        if ( Math.abs( currentX - mPrevX ) > mRadius * 1.5 ){
             if ( currentX > mPrevX ){
                 mCurrentFlag++;
                 mCurrentFlag %= mSize;
@@ -117,32 +114,50 @@ public class ChromeLikeView extends View  {
         }
     }
 
-    public void onActionUpOrCancel(MotionEvent event){
+    public void onActionUpOrCancel(MotionEvent event, boolean isRipple){
         if ( !mIsDown ) return;
         float currentX = event.getX();
         mIsDown = false;
-        if ( mGummyAnimatorHelper.isAnimationStarted() ) return;
-        mGummyAnimatorHelper.launchAnim(
-                currentX
-                , mPrevX
-                , mTranslate
-                , flag2TargetTranslate(mCurrentFlag) );
+        if ( isRipple ){
+            if ( mRippleAnimatorHelper.isAnimationStarted() ) return;
+            mRippleAnimatorHelper.launchAnim(mRadius,getMeasuredWidth());
+        } else {
+            if ( mGummyAnimatorHelper.isAnimationStarted() ) return;
+            mGummyAnimatorHelper.launchAnim(
+                    currentX
+                    , mPrevX
+                    , mTranslate
+                    , flag2TargetTranslate(mCurrentFlag) );
+        }
+
     }
 
-    private void update(float currentX, float prevX, boolean animate){
-        update(currentX,0,prevX,0,animate);
+    private void update(float currentX, float prevX, int radius, boolean animate){
+        //mRadius
+        update(currentX,0,prevX,0,radius,animate);
     }
 
-    private void update(float currentX, float currentY, float prevX, float prevY, boolean animate ){
+    private void updateAlpha( float alpha ){
+        mPaint.setAlpha(Math.round(255 * alpha));
+    }
+
+    private void reset(){
+        updateAlpha(1);
+        update(0, 0, mRadius, false);
+        mCurrentFlag = 1;
+        mTranslate = flag2TargetTranslate(mCurrentFlag);
+    }
+
+    private void update(float currentX, float currentY, float prevX, float prevY, int radius, boolean animate ){
         float distance = distance(prevX, prevY, currentX, currentY);
-        float tempDegree = points2degress(prevX, prevY, currentX, currentY);
+        float tempDegree = points2Degrees(prevX, prevY, currentX, currentY);
         if ( animate ){
             if ( Math.abs( mDegrees - tempDegree ) > 5 ) distance = -distance;
         } else {
             //if ( distance < mTouchSlop ) distance = 0;
             mDegrees = tempDegree;
         }
-        float realLong = radius  + distance;
+        float realLong = radius + distance;
         float realShort = radius - distance * 0.1f;
 
         mPath.reset();
@@ -191,20 +206,76 @@ public class ChromeLikeView extends View  {
         canvas.drawPath(mPath, mPaint);
         canvas.restore();
 
-        canvas.drawCircle(centerX, centerY, radius / 8, mCirclePaint);
-        canvas.drawCircle(centerX + radius*3,centerY,radius/8,mCirclePaint);
-        canvas.drawCircle(centerX - radius*3,centerY,radius/8,mCirclePaint);
+        canvas.drawCircle(centerX, centerY, mRadius / 8, mCirclePaint);
+        canvas.drawCircle(centerX + mRadius *3,centerY, mRadius /8,mCirclePaint);
+        canvas.drawCircle(centerX - mRadius *3,centerY, mRadius /8,mCirclePaint);
 
         //canvas.drawCircle(mPrevX,mPrevY,5,mDebugPaint);
     }
 
     private int flag2TargetTranslate( int flag ){
-        return flag * radius*3 - radius*3;
+        return flag * mRadius *3 - mRadius *3;
     }
 
-    private static float points2degress(float x1, float y1, float x2, float y2){
+    private static float points2Degrees(float x1, float y1, float x2, float y2){
         double angle = Math.atan2(y2-y1,x2-x1);
         return (float) Math.toDegrees(angle);
+    }
+
+
+    public class RippleAnimatorHelper implements AnimatorUpdateListenerCompat, AnimatorListenerCompat {
+
+        private float mAnimFromRadius;
+        private float mAnimToRadius;
+        private ValueAnimatorCompat mRippleAnimator;
+        private boolean mAnimationStarted;
+
+        @Override
+        public void onAnimationCancel(ValueAnimatorCompat animation) {
+            mAnimationStarted = false;
+        }
+
+        @Override
+        public void onAnimationRepeat(ValueAnimatorCompat animation) {
+
+        }
+
+        @Override
+        public void onAnimationUpdate(ValueAnimatorCompat animation) {
+            float interpolation = sInterpolator.getInterpolation(animation.getAnimatedFraction());
+            int currentRadius = FloatEvaluator.evaluate(interpolation,mAnimFromRadius,mAnimToRadius).intValue();
+            update(0, 0, currentRadius, true);
+            updateAlpha(1-interpolation);
+        }
+
+        @Override
+        public void onAnimationStart(ValueAnimatorCompat animation) {
+            mAnimationStarted = true;
+        }
+
+        @Override
+        public void onAnimationEnd(ValueAnimatorCompat animation) {
+            mAnimationStarted = false;
+        }
+
+        public void launchAnim(float fromRadius, float toRadius) {
+
+            if ( mRippleAnimator == null ){
+                mRippleAnimator = AnimatorCompatHelper.emptyValueAnimator();
+                mRippleAnimator.setDuration(300);
+                mRippleAnimator.addUpdateListener(this);
+                mRippleAnimator.setTarget(ChromeLikeView.this);
+                mRippleAnimator.addListener(this);
+            }
+            mAnimFromRadius = fromRadius;
+            mAnimToRadius = toRadius;
+            mRippleAnimator.cancel();
+            mRippleAnimator.start();
+        }
+
+        public boolean isAnimationStarted() {
+            return mAnimationStarted;
+        }
     }
 
 
@@ -229,10 +300,10 @@ public class ChromeLikeView extends View  {
 
         @Override
         public void onAnimationUpdate(ValueAnimatorCompat animation) {
-            float interpolation = sInterpolator.getInterpolation(animation.getAnimatedFraction());
+            float interpolation = sBounceInterpolator.getInterpolation(animation.getAnimatedFraction());
             Float currentX = FloatEvaluator.evaluate(interpolation,mAnimFromX,mAnimToX);
             mTranslate = FloatEvaluator.evaluate(interpolation, mAnimFromTranslate, mAnimToTranslate);
-            update(currentX, mAnimToX, true);
+            update(currentX, mAnimToX, mRadius, true);
         }
 
         @Override
@@ -246,7 +317,7 @@ public class ChromeLikeView extends View  {
             mPrevX = mAnimFromX;
         }
 
-        private void launchAnim(float fromX, float toX, float fromTranslate, float toTranslate) {
+        public void launchAnim(float fromX, float toX, float fromTranslate, float toTranslate) {
 
             if ( mGummyAnimator == null ){
                 mGummyAnimator = AnimatorCompatHelper.emptyValueAnimator();

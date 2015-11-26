@@ -124,10 +124,10 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             case MotionEvent.ACTION_DOWN:
                 break;
             case MotionEvent.ACTION_CANCEL:
-                mChromeLikeView.onActionUpOrCancel(event);
+                mChromeLikeView.onActionUpOrCancel(event,mTopOffset >= sThreshold);
                 break;
             case MotionEvent.ACTION_UP:
-                mChromeLikeView.onActionUpOrCancel(event);
+                mChromeLikeView.onActionUpOrCancel(event,mTopOffset >= sThreshold);
                 launchAction();
 
                 break;
