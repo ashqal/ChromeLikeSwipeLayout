@@ -20,7 +20,7 @@ import android.widget.ScrollView;
  * Created by hzqiujiadi on 15/11/20.
  * hzqiujiadi ashqalcn@gmail.com
  */
-public class ChromeLikeSwipeLayout extends ViewGroup {
+public class ChromeLikeSwipeLayout extends ViewGroup implements ChromeLikeView.IOnRippleListener {
     private static final String TAG = "ChromeLikeSwipeLayout";
     private static final int sThreshold = 300;
 
@@ -59,6 +59,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         mTouchSlop = configuration.getScaledTouchSlop();
 
         mChromeLikeView = new ChromeLikeView(getContext());
+        mChromeLikeView.setRippleListener(this);
         addView(mChromeLikeView);
     }
 
@@ -95,8 +96,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 break;
             case MotionEvent.ACTION_MOVE:
                 Log.e(TAG, String.format("onInterceptTouchEvent ACTION_MOVE moving:%f",(getY - mTouchDownActor)));
-                if ( !mBeginDragging && getY - mTouchDownActor > mTouchSlop )
-                {
+                if ( !mBeginDragging && getY - mTouchDownActor > mTouchSlop ) {
                     mBeginDragging = true;
                 }
                 Log.d(TAG, String.format("onInterceptTouchEvent ACTION_MOVE mBeginDragging=%b",mBeginDragging));
@@ -174,31 +174,39 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     }
 
     private void launchAction() {
-        ensureTarget();
-        final int from = mTarget.getTop();
-        final int to = 0;
 
-        if ( from == sThreshold ){
+        if ( mTopOffset >= sThreshold ){
             mIsBusy = true;
         } else {
             if ( mIsBusy ) return;
-            Animation animation = new Animation() {
-                @Override
-                protected void applyTransformation(float interpolatedTime, Transformation t) {
-                    float step = (to - from) * interpolatedTime + from;
-                    childOffsetTopAndBottom((int) (step - mTarget.getTop()));
-                }
-            };
-            animation.setDuration(300);
-            animation.setInterpolator(new DecelerateInterpolator());
-            mTarget.clearAnimation();
-            mTarget.startAnimation(animation);
-
+            launchResetAnim();
             mBeginDragging = false;
         }
+    }
 
+    private void launchResetAnim(){
+        ensureTarget();
 
+        final int from = mTarget.getTop();
+        final int to = 0;
+        Animation animation = new Animation() {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                float step = (to - from) * interpolatedTime + from;
+                childOffsetTopAndBottom((int) (step - mTarget.getTop()));
+            }
+        };
+        animation.setDuration(300);
+        animation.setInterpolator(new DecelerateInterpolator());
+        mTarget.clearAnimation();
+        mTarget.startAnimation(animation);
+    }
 
+    @Override
+    public void onRippleAnimFinished() {
+        mIsBusy = false;
+        launchResetAnim();
+        mBeginDragging = false;
     }
 
     @Override
@@ -289,4 +297,6 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             }
         }
     }
+
+
 }

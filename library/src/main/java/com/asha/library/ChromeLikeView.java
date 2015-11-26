@@ -22,7 +22,7 @@ import android.view.animation.Interpolator;
  * Created by hzqiujiadi on 15/11/18.
  * hzqiujiadi ashqalcn@gmail.com
  */
-public class ChromeLikeView extends View  {
+public class ChromeLikeView extends View {
     private static final String TAG = "ChromeLikeView";
     private static final float sMagicNumber = 0.55228475f;
     private static Interpolator sBounceInterpolator = new BounceInterpolator();
@@ -38,6 +38,7 @@ public class ChromeLikeView extends View  {
     private int mCurrentFlag = 1;
     private int mSize = 3;
     private int mRadius = 80;
+    private IOnRippleListener mRippleListener;
     private GummyAnimatorHelper mGummyAnimatorHelper = new GummyAnimatorHelper();
     private RippleAnimatorHelper mRippleAnimatorHelper = new RippleAnimatorHelper();
 
@@ -113,6 +114,8 @@ public class ChromeLikeView extends View  {
                     , flag2TargetTranslate(mCurrentFlag) );
         }
     }
+
+
 
     public void onActionUpOrCancel(MotionEvent event, boolean isRipple){
         if ( !mIsDown ) return;
@@ -229,6 +232,7 @@ public class ChromeLikeView extends View  {
         private float mAnimToRadius;
         private ValueAnimatorCompat mRippleAnimator;
         private boolean mAnimationStarted;
+        private boolean mEventDispatched;
 
         @Override
         public void onAnimationCancel(ValueAnimatorCompat animation) {
@@ -246,11 +250,17 @@ public class ChromeLikeView extends View  {
             int currentRadius = FloatEvaluator.evaluate(interpolation,mAnimFromRadius,mAnimToRadius).intValue();
             update(0, 0, currentRadius, true);
             updateAlpha(1-interpolation);
+
+            if ( !mEventDispatched && mRippleListener != null && animation.getAnimatedFraction() > 0.5 ){
+                mRippleListener.onRippleAnimFinished();
+                mEventDispatched = true;
+            }
         }
 
         @Override
         public void onAnimationStart(ValueAnimatorCompat animation) {
             mAnimationStarted = true;
+            mEventDispatched = false;
         }
 
         @Override
@@ -349,5 +359,13 @@ public class ChromeLikeView extends View  {
             float startFloat = startValue.floatValue();
             return startFloat + fraction * (endValue.floatValue() - startFloat);
         }
+    }
+
+    public void setRippleListener(IOnRippleListener mRippleListener) {
+        this.mRippleListener = mRippleListener;
+    }
+
+    public interface IOnRippleListener {
+        void onRippleAnimFinished();
     }
 }
