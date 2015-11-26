@@ -33,7 +33,7 @@ public class ChromeLikeView extends View {
     private Path mPath;
     private float mPrevX;
     private float mDegrees;
-    private boolean mIsDown;
+    private boolean mIsFirstExpanded;
     private float mTranslate;
     private int mCurrentFlag = 1;
     private int mSize = 3;
@@ -84,19 +84,30 @@ public class ChromeLikeView extends View {
         reset();
     }
 
+
+    public void onViewExpand(float fraction) {
+        updateAlpha(fraction);
+        update(0,0,Math.round(mRadius*fraction),true);
+    }
+
     public void onActionDown(MotionEvent event){
-        mIsDown = true;
-        mPrevX = event.getX();
         reset();
     }
 
-    public void onActionMove(MotionEvent event){
-        if ( !mIsDown ) return;
+    public void onActionMove(MotionEvent event, boolean isExpanded){
+        if ( !mIsFirstExpanded && isExpanded ){
+            mIsFirstExpanded = true;
+            mPrevX = event.getX();
+        }
+
+        if ( !isExpanded ) return;
+
         float currentX = event.getX();
         if ( mGummyAnimatorHelper.isAnimationStarted() ){
             mGummyAnimatorHelper.updateFromX(currentX);
             return;
         }
+
         update( currentX, mPrevX, mRadius, false );
         if ( Math.abs( currentX - mPrevX ) > mRadius * 1.5 ){
             if ( currentX > mPrevX ){
@@ -115,24 +126,13 @@ public class ChromeLikeView extends View {
         }
     }
 
-
-
-    public void onActionUpOrCancel(MotionEvent event, boolean isRipple){
-        if ( !mIsDown ) return;
-        float currentX = event.getX();
-        mIsDown = false;
-        if ( isRipple ){
+    public void onActionUpOrCancel(MotionEvent event, boolean isExpanded){
+        if ( !mIsFirstExpanded ) return;
+        mIsFirstExpanded = false;
+        if ( isExpanded ){
             if ( mRippleAnimatorHelper.isAnimationStarted() ) return;
             mRippleAnimatorHelper.launchAnim(mRadius,getMeasuredWidth());
-        } else {
-            if ( mGummyAnimatorHelper.isAnimationStarted() ) return;
-            mGummyAnimatorHelper.launchAnim(
-                    currentX
-                    , mPrevX
-                    , mTranslate
-                    , flag2TargetTranslate(mCurrentFlag) );
         }
-
     }
 
     private void update(float currentX, float prevX, int radius, boolean animate){
@@ -146,7 +146,7 @@ public class ChromeLikeView extends View {
 
     private void reset(){
         updateAlpha(1);
-        update(0, 0, mRadius, false);
+        onViewExpand(0);
         mCurrentFlag = 1;
         mTranslate = flag2TargetTranslate(mCurrentFlag);
     }
@@ -251,10 +251,6 @@ public class ChromeLikeView extends View {
             update(0, 0, currentRadius, true);
             updateAlpha(1-interpolation);
 
-            if ( !mEventDispatched && mRippleListener != null && animation.getAnimatedFraction() > 0.5 ){
-                mRippleListener.onRippleAnimFinished();
-                mEventDispatched = true;
-            }
         }
 
         @Override
@@ -266,13 +262,17 @@ public class ChromeLikeView extends View {
         @Override
         public void onAnimationEnd(ValueAnimatorCompat animation) {
             mAnimationStarted = false;
+            if ( !mEventDispatched && mRippleListener != null ){
+                mRippleListener.onRippleAnimFinished();
+                mEventDispatched = true;
+            }
         }
 
         public void launchAnim(float fromRadius, float toRadius) {
 
             if ( mRippleAnimator == null ){
                 mRippleAnimator = AnimatorCompatHelper.emptyValueAnimator();
-                mRippleAnimator.setDuration(300);
+                mRippleAnimator.setDuration(500);
                 mRippleAnimator.addUpdateListener(this);
                 mRippleAnimator.setTarget(ChromeLikeView.this);
                 mRippleAnimator.addListener(this);
