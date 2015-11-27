@@ -15,4 +15,14 @@
         android:onClick="TestB"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
+
+    <Button
+        android:text="ListView"
+        android:onClick="OnListViewClicked"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <ImageButton
+        android:src="@drawable/selector_icon_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 </LinearLayout>

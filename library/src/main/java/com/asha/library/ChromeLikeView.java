@@ -12,24 +12,26 @@ import android.support.v4.animation.AnimatorUpdateListenerCompat;
 import android.support.v4.animation.ValueAnimatorCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.BounceInterpolator;
 import android.view.animation.Interpolator;
+
+import com.asha.library.ChromeLikeSwipeLayout.IOnExpandViewListener;
 
 
 /**
  * Created by hzqiujiadi on 15/11/18.
  * hzqiujiadi ashqalcn@gmail.com
  */
-public class ChromeLikeView extends View {
+public class ChromeLikeView extends View implements IOnExpandViewListener {
     private static final String TAG = "ChromeLikeView";
     private static final float sMagicNumber = 0.55228475f;
     private static Interpolator sBounceInterpolator = new BounceInterpolator();
     private static Interpolator sInterpolator = new FastOutSlowInInterpolator();
     private Paint mPaint;
     private Paint mCirclePaint;
-    private Paint mDebugPaint;
     private Path mPath;
     private float mPrevX;
     private float mDegrees;
@@ -74,20 +76,14 @@ public class ChromeLikeView extends View {
         mCirclePaint.setStyle(Paint.Style.FILL);
         mCirclePaint.setAntiAlias(true);
 
-        mDebugPaint = new Paint();
-        mDebugPaint.setColor(0xFF00FF00);
-        mDebugPaint.setStyle(Paint.Style.FILL);
-        mDebugPaint.setAntiAlias(true);
-
         mPath = new Path();
-
         reset();
+        setWillNotDraw(false);
     }
 
-
-    public void onViewExpand(float fraction) {
-        updateAlpha(fraction);
-        update(0,0,Math.round(mRadius*fraction),true);
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     public void onActionDown(MotionEvent event){
@@ -98,6 +94,7 @@ public class ChromeLikeView extends View {
         if ( !mIsFirstExpanded && isExpanded ){
             mIsFirstExpanded = true;
             mPrevX = event.getX();
+            return;
         }
 
         if ( !isExpanded ) return;
@@ -108,7 +105,7 @@ public class ChromeLikeView extends View {
             return;
         }
 
-        update( currentX, mPrevX, mRadius, false );
+        updatePath( currentX, mPrevX, mRadius, false );
         if ( Math.abs( currentX - mPrevX ) > mRadius * 1.5 ){
             if ( currentX > mPrevX ){
                 mCurrentFlag++;
@@ -135,23 +132,22 @@ public class ChromeLikeView extends View {
         }
     }
 
-    private void update(float currentX, float prevX, int radius, boolean animate){
-        //mRadius
-        update(currentX,0,prevX,0,radius,animate);
-    }
-
     private void updateAlpha( float alpha ){
         mPaint.setAlpha(Math.round(255 * alpha));
     }
 
     private void reset(){
         updateAlpha(1);
-        onViewExpand(0);
+        onExpandView(0);
         mCurrentFlag = 1;
         mTranslate = flag2TargetTranslate(mCurrentFlag);
     }
 
-    private void update(float currentX, float currentY, float prevX, float prevY, int radius, boolean animate ){
+    private void updatePath(float currentX, float prevX, int radius, boolean animate){
+        updatePath(currentX,0,prevX,0,radius,animate);
+    }
+
+    private void updatePath(float currentX, float currentY, float prevX, float prevY, int radius, boolean animate ){
         float distance = distance(prevX, prevY, currentX, currentY);
         float tempDegree = points2Degrees(prevX, prevY, currentX, currentY);
         if ( animate ){
@@ -192,14 +188,12 @@ public class ChromeLikeView extends View {
         invalidate();
     }
 
-    public static float distance(float x1,float y1, float x2, float y2){
-        return (float) Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-    }
-
     @Override
     protected void onDraw(Canvas canvas) {
         int centerX = getMeasuredWidth() >> 1;
         int centerY = getMeasuredHeight() >> 1;
+
+        Log.e(TAG,"onDraw:" + getMeasuredHeight());
 
         canvas.drawColor(0xFFDDDDDD);
 
@@ -212,8 +206,10 @@ public class ChromeLikeView extends View {
         canvas.drawCircle(centerX, centerY, mRadius / 8, mCirclePaint);
         canvas.drawCircle(centerX + mRadius *3,centerY, mRadius /8,mCirclePaint);
         canvas.drawCircle(centerX - mRadius *3,centerY, mRadius /8,mCirclePaint);
+    }
 
-        //canvas.drawCircle(mPrevX,mPrevY,5,mDebugPaint);
+    private static float distance(float x1,float y1, float x2, float y2){
+        return (float) Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
     }
 
     private int flag2TargetTranslate( int flag ){
@@ -225,6 +221,12 @@ public class ChromeLikeView extends View {
         return (float) Math.toDegrees(angle);
     }
 
+    @Override
+    public void onExpandView(float fraction) {
+        updateAlpha(fraction);
+        updatePath(0,0,Math.round(mRadius*fraction),true);
+        Log.e(TAG,"onMeasure: onExpandView=" + fraction);
+    }
 
     public class RippleAnimatorHelper implements AnimatorUpdateListenerCompat, AnimatorListenerCompat {
 
@@ -248,7 +250,7 @@ public class ChromeLikeView extends View {
         public void onAnimationUpdate(ValueAnimatorCompat animation) {
             float interpolation = sInterpolator.getInterpolation(animation.getAnimatedFraction());
             int currentRadius = FloatEvaluator.evaluate(interpolation,mAnimFromRadius,mAnimToRadius).intValue();
-            update(0, 0, currentRadius, true);
+            updatePath(0, 0, currentRadius, true);
             updateAlpha(1-interpolation);
 
         }
@@ -313,7 +315,7 @@ public class ChromeLikeView extends View {
             float interpolation = sBounceInterpolator.getInterpolation(animation.getAnimatedFraction());
             Float currentX = FloatEvaluator.evaluate(interpolation,mAnimFromX,mAnimToX);
             mTranslate = FloatEvaluator.evaluate(interpolation, mAnimFromTranslate, mAnimToTranslate);
-            update(currentX, mAnimToX, mRadius, true);
+            updatePath(currentX, mAnimToX, mRadius, true);
         }
 
         @Override

@@ -22,4 +22,9 @@ public class MainActivity extends AppCompatActivity {
         Intent i = new Intent(this,BMainActivity.class);
         startActivity(i);
     }
+
+    public void OnListViewClicked(View view) {
+        Intent i = new Intent(this,ListViewActivity.class);
+        startActivity(i);
+    }
 }

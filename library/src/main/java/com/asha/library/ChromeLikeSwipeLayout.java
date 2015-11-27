@@ -16,13 +16,17 @@ import android.view.animation.Transformation;
 import android.widget.AbsListView;
 import android.widget.ScrollView;
 
+import com.asha.library.ChromeLikeView.IOnRippleListener;
+
+import java.util.LinkedList;
+
 /**
  * Created by hzqiujiadi on 15/11/20.
  * hzqiujiadi ashqalcn@gmail.com
  */
-public class ChromeLikeSwipeLayout extends ViewGroup implements ChromeLikeView.IOnRippleListener {
+public class ChromeLikeSwipeLayout extends ViewGroup {
     private static final String TAG = "ChromeLikeSwipeLayout";
-    private static final int sThreshold = 300;
+    private static final int sThreshold = 250;
 
     private View mTarget; // the target of the gesture
     private ChromeLikeView mChromeLikeView;
@@ -31,6 +35,8 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements ChromeLikeView.I
     private int mTouchSlop;
     private float mTouchDownActor;
     private boolean mIsBusy;
+    private LinkedList<IOnExpandViewListener> mExpandListeners = new LinkedList<>();
+    private static final int sThreshold2 = 800;
 
 
     public ChromeLikeSwipeLayout(Context context) {
@@ -59,7 +65,15 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements ChromeLikeView.I
         mTouchSlop = configuration.getScaledTouchSlop();
 
         mChromeLikeView = new ChromeLikeView(getContext());
-        mChromeLikeView.setRippleListener(this);
+        mChromeLikeView.setRippleListener(new IOnRippleListener() {
+            @Override
+            public void onRippleAnimFinished() {
+                mIsBusy = false;
+                launchResetAnim(false);
+                mBeginDragging = false;
+            }
+        });
+        addOnExpandViewListener(mChromeLikeView);
         addView(mChromeLikeView);
     }
 
@@ -74,7 +88,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements ChromeLikeView.I
 
             case MotionEvent.ACTION_DOWN:
                 if ( mBeginDragging ){
-                    Log.d(TAG, String.format("onInterceptTouchEvent ACTION_DOWN %d %d",mTopOffset,sThreshold));
+                    //Log.d(TAG, String.format("onInterceptTouchEvent ACTION_DOWN %d %d",mTopOffset,sThreshold));
                     float diff;
                     if ( mTopOffset < 0 ){
                         diff = 0;
@@ -133,27 +147,14 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements ChromeLikeView.I
                 break;
             case MotionEvent.ACTION_MOVE:
                 mChromeLikeView.onActionMove(event,isExpanded);
-
-                mTopOffset = (int) (getY - mTouchDownActor);
+                mTopOffset = (int) ((getY - mTouchDownActor) * 0.6);
                 ensureTarget();
                 View child = mTarget;
                 int currentTop = child.getTop();
-                int target;
                 if ( mBeginDragging ) {
-                    if ( currentTop <= sThreshold ) {
-                        if ( mTopOffset < 0 ){
-                            target = 0 - currentTop;
-                        } else if ( mTopOffset < sThreshold ) {
-                            target = mTopOffset - currentTop;
-                        } else {
-                            target = sThreshold - currentTop;
-                        }
-                    } else {
-                        target = sThreshold - currentTop;
-                    }
                     if ( !isExpanded )
-                        mChromeLikeView.onViewExpand( currentTop * 1.0f / sThreshold );
-                    childOffsetTopAndBottom(target);
+                        notifyOnExpandListeners( currentTop * 1.0f / sThreshold );
+                    childOffsetTopAndBottom(currentTop,mTopOffset);
                 }
                 invalidate();
                 //requestLayout();
@@ -169,10 +170,24 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements ChromeLikeView.I
         return true;
     }
 
-    private void childOffsetTopAndBottom(int offset){
-        mTarget.offsetTopAndBottom( offset );
-        mChromeLikeView.offsetTopAndBottom( offset );
-        mChromeLikeView.invalidate();
+
+    private void childOffsetTopAndBottom(int currentTop, int offset){
+        int target;
+        if ( currentTop <= sThreshold2 ) {
+            if ( offset < 0 ){
+                target = 0 - currentTop;
+            } else if ( offset < sThreshold2 ) {
+                target = offset - currentTop;
+            } else {
+                target = sThreshold2 - currentTop;
+            }
+        } else {
+            target = sThreshold2 - currentTop;
+        }
+        mTarget.offsetTopAndBottom( target );
+
+        mChromeLikeView.offsetTopAndBottom( target );
+        requestLayout();
     }
 
     private void executeAction() {
@@ -195,23 +210,15 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements ChromeLikeView.I
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
                 float step = (to - from) * interpolatedTime + from;
-                if ( isFromCancel ) {
-                    mChromeLikeView.onViewExpand(interpolatedTime);
-                }
-                childOffsetTopAndBottom((int) (step - mTarget.getTop()));
+                if ( isFromCancel )
+                    notifyOnExpandListeners( mTarget.getTop() * 1.0f / sThreshold );
+                childOffsetTopAndBottom( mTarget.getTop(), Math.round(step) );
             }
         };
         animation.setDuration(300);
         animation.setInterpolator(new DecelerateInterpolator());
         mTarget.clearAnimation();
         mTarget.startAnimation(animation);
-    }
-
-    @Override
-    public void onRippleAnimFinished() {
-        mIsBusy = false;
-        launchResetAnim(false);
-        mBeginDragging = false;
     }
 
     @Override
@@ -240,24 +247,17 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements ChromeLikeView.I
         }
         View child = mTarget;
         int childLeft = getPaddingLeft();
-        int childTop = getPaddingTop()+ mTopOffset;
+        int childTop = getPaddingTop() + child.getTop();
         int childWidth = width - getPaddingLeft() - getPaddingRight();
         int childHeight = height - getPaddingTop() - getPaddingBottom();
         child.layout(childLeft, childTop, childLeft + childWidth, childTop + childHeight);
 
         child = mChromeLikeView;
         childLeft = getPaddingLeft();
-        childTop = getPaddingTop() + mTopOffset - child.getMeasuredHeight();
+        childTop = childTop - child.getMeasuredHeight();
         childWidth = width - getPaddingLeft() - getPaddingRight();
         childHeight = child.getMeasuredHeight();
         child.layout(childLeft, childTop, childLeft + childWidth, childTop + childHeight);
-
-    }
-
-    @Override
-    public void requestDisallowInterceptTouchEvent(boolean b) {
-        // Nope.
-        //super.requestDisallowInterceptTouchEvent(b);
     }
 
     @Override
@@ -276,15 +276,21 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements ChromeLikeView.I
                 getMeasuredHeight() - getPaddingTop() - getPaddingBottom(), MeasureSpec.EXACTLY));
 
         mChromeLikeView.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec(300, MeasureSpec.EXACTLY));
-        Log.e(TAG,String.format("%d %d",mChromeLikeView.getMeasuredWidth(),mChromeLikeView.getMeasuredHeight()));
+                MeasureSpec.makeMeasureSpec(mTarget.getTop(), MeasureSpec.EXACTLY));
     }
+
+    @Override
+    public void requestDisallowInterceptTouchEvent(boolean b) {
+        // Nope.
+        //super.requestDisallowInterceptTouchEvent(b);
+    }
+
 
     private boolean canChildDragDown()
     {
         ensureTarget();
         boolean result = ViewCompat.canScrollVertically(mTarget,-1) ;
-        Log.e(TAG,"canChildDragDown:" + result + ",scrollY:" + mTarget.getScrollY() );
+        //Log.e(TAG,"canChildDragDown:" + result + ",scrollY:" + mTarget.getScrollY() );
         return result ;
     }
 
@@ -303,5 +309,26 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements ChromeLikeView.I
         }
     }
 
+
+    public void notifyOnExpandListeners(float fraction){
+        for ( IOnExpandViewListener listener : mExpandListeners )
+            listener.onExpandView(fraction);
+    }
+
+    public void addOnExpandViewListener(IOnExpandViewListener listener){
+        mExpandListeners.add(listener);
+    }
+
+    public void removeOnExpandViewListener(IOnExpandViewListener listener){
+        mExpandListeners.remove(listener);
+    }
+
+    public void removeAllOnExpandViewListener(){
+        mExpandListeners.clear();
+    }
+
+    public interface IOnExpandViewListener {
+        void onExpandView(float fraction);
+    }
 
 }

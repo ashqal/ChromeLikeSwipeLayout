@@ -17,6 +17,7 @@
         </activity>
         <activity android:name=".AMainActivity"/>
         <activity android:name=".BMainActivity"/>
+        <activity android:name=".ListViewActivity"/>
     </application>
 
 </manifest>
