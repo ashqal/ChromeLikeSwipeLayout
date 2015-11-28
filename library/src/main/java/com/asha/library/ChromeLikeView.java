@@ -5,11 +5,13 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.v4.animation.AnimatorCompatHelper;
 import android.support.v4.animation.AnimatorListenerCompat;
 import android.support.v4.animation.AnimatorUpdateListenerCompat;
 import android.support.v4.animation.ValueAnimatorCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -19,6 +21,9 @@ import android.view.animation.BounceInterpolator;
 import android.view.animation.Interpolator;
 
 import com.asha.library.ChromeLikeSwipeLayout.IOnExpandViewListener;
+
+import java.util.LinkedList;
+import java.util.List;
 
 
 /**
@@ -39,10 +44,11 @@ public class ChromeLikeView extends View implements IOnExpandViewListener {
     private float mTranslate;
     private int mCurrentFlag = 1;
     private int mSize = 3;
-    private int mRadius = 80;
+    private int mRadius = 120;
     private IOnRippleListener mRippleListener;
     private GummyAnimatorHelper mGummyAnimatorHelper = new GummyAnimatorHelper();
     private RippleAnimatorHelper mRippleAnimatorHelper = new RippleAnimatorHelper();
+    private List<Drawable> mDrawables;
 
     public ChromeLikeView(Context context) {
         super(context);
@@ -72,9 +78,20 @@ public class ChromeLikeView extends View implements IOnExpandViewListener {
         mPaint.setStrokeWidth(5);
 
         mCirclePaint = new Paint();
-        mCirclePaint.setColor(0xFFCC11FF);
+        mCirclePaint.setColor(0xFFFFFFFF);
         mCirclePaint.setStyle(Paint.Style.FILL);
         mCirclePaint.setAntiAlias(true);
+
+        mDrawables = new LinkedList<>();
+        mDrawables.add(ContextCompat.getDrawable(getContext(),R.drawable.iconfont_add));
+        mDrawables.add(ContextCompat.getDrawable(getContext(),R.drawable.iconfont_refresh));
+        mDrawables.add(ContextCompat.getDrawable(getContext(),R.drawable.iconfont_close));
+
+        for ( Drawable drawable : mDrawables ){
+            int width = drawable.getMinimumWidth();
+            int height = drawable.getMinimumHeight();
+            drawable.setBounds(-width>>1,-height>>1,width>>1,height>>1);
+        }
 
         mPath = new Path();
         reset();
@@ -195,7 +212,7 @@ public class ChromeLikeView extends View implements IOnExpandViewListener {
 
         Log.e(TAG,"onDraw:" + getMeasuredHeight());
 
-        canvas.drawColor(0xFFDDDDDD);
+        canvas.drawColor(0xFF333333);
 
         canvas.save();
         canvas.translate(centerX + mTranslate, centerY);
@@ -203,9 +220,17 @@ public class ChromeLikeView extends View implements IOnExpandViewListener {
         canvas.drawPath(mPath, mPaint);
         canvas.restore();
 
-        canvas.drawCircle(centerX, centerY, mRadius / 8, mCirclePaint);
-        canvas.drawCircle(centerX + mRadius *3,centerY, mRadius /8,mCirclePaint);
-        canvas.drawCircle(centerX - mRadius *3,centerY, mRadius /8,mCirclePaint);
+        int contentWidth = mRadius*3;
+        int totalWidth = getMeasuredWidth();
+        int totalContextWidth = contentWidth * (mDrawables.size() - 1);
+        int startOffset = (totalWidth - totalContextWidth) >> 1;
+        canvas.save();
+        canvas.translate(startOffset,centerY);
+        for ( Drawable drawable : mDrawables ){
+            drawable.draw(canvas);
+            canvas.translate(contentWidth,0);
+        }
+        canvas.restore();
     }
 
     private static float distance(float x1,float y1, float x2, float y2){

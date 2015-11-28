@@ -1,15 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <com.asha.library.ChromeLikeSwipeLayout
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:fitsSystemWindows="true">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#00000000">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="#00000000" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <RelativeLayout
+        android:clipToPadding="false"
+        android:paddingTop="?attr/actionBarSize"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <ListView
-            android:id="@+id/listView"
+        <com.asha.library.ChromeLikeSwipeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-        </ListView>
-    </com.asha.library.ChromeLikeSwipeLayout>
-</RelativeLayout>
+            <ListView
+                android:id="@+id/listView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            </ListView>
+        </com.asha.library.ChromeLikeSwipeLayout>
+    </RelativeLayout>
+
+</android.support.design.widget.CoordinatorLayout>
+

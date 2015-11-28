@@ -26,7 +26,7 @@ import java.util.LinkedList;
  */
 public class ChromeLikeSwipeLayout extends ViewGroup {
     private static final String TAG = "ChromeLikeSwipeLayout";
-    private static final int sThreshold = 250;
+    private static final int sThreshold = 200;
 
     private View mTarget; // the target of the gesture
     private ChromeLikeView mChromeLikeView;
@@ -247,14 +247,14 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         }
         View child = mTarget;
         int childLeft = getPaddingLeft();
-        int childTop = getPaddingTop() + child.getTop();
+        int childTop = child.getTop();
         int childWidth = width - getPaddingLeft() - getPaddingRight();
-        int childHeight = height - getPaddingTop() - getPaddingBottom();
+        int childHeight = height - getPaddingBottom();
         child.layout(childLeft, childTop, childLeft + childWidth, childTop + childHeight);
 
         child = mChromeLikeView;
         childLeft = getPaddingLeft();
-        childTop = childTop - child.getMeasuredHeight();
+        childTop = mTarget.getTop() - child.getMeasuredHeight();
         childWidth = width - getPaddingLeft() - getPaddingRight();
         childHeight = child.getMeasuredHeight();
         child.layout(childLeft, childTop, childLeft + childWidth, childTop + childHeight);
