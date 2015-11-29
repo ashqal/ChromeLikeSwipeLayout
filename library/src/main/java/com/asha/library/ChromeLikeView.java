@@ -5,32 +5,28 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.v4.animation.AnimatorCompatHelper;
 import android.support.v4.animation.AnimatorListenerCompat;
 import android.support.v4.animation.AnimatorUpdateListenerCompat;
 import android.support.v4.animation.ValueAnimatorCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.BounceInterpolator;
 import android.view.animation.Interpolator;
 
 import com.asha.library.ChromeLikeSwipeLayout.IOnExpandViewListener;
-
-import java.util.LinkedList;
-import java.util.List;
 
 
 /**
  * Created by hzqiujiadi on 15/11/18.
  * hzqiujiadi ashqalcn@gmail.com
  */
-public class ChromeLikeView extends View implements IOnExpandViewListener {
+public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
     private static final String TAG = "ChromeLikeView";
     private static final float sMagicNumber = 0.55228475f;
     private static Interpolator sBounceInterpolator = new BounceInterpolator();
@@ -48,7 +44,6 @@ public class ChromeLikeView extends View implements IOnExpandViewListener {
     private IOnRippleListener mRippleListener;
     private GummyAnimatorHelper mGummyAnimatorHelper = new GummyAnimatorHelper();
     private RippleAnimatorHelper mRippleAnimatorHelper = new RippleAnimatorHelper();
-    private List<Drawable> mDrawables;
 
     public ChromeLikeView(Context context) {
         super(context);
@@ -71,6 +66,41 @@ public class ChromeLikeView extends View implements IOnExpandViewListener {
         init();
     }
 
+    private void updateCurrentFlag(int flag){
+        mCurrentFlag = flag;
+        boolean isPressed;
+        for (int i = 0 ; i < getChildCount() ; i++ ){
+            View view = getChildAt(i);
+            isPressed = i == mCurrentFlag;
+            view.setPressed(isPressed);
+        }
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        int contentWidth = mRadius*3;
+        int totalWidth = getMeasuredWidth();
+        int totalContextWidth = contentWidth * (getChildCount() - 1);
+        int startXOffset = (totalWidth - totalContextWidth) >> 1;
+
+        int startYOffset = (b - t);
+
+        for (int i = 0 ; i < getChildCount() ; i++ ){
+            View view = getChildAt(i);
+            final int left = startXOffset + i * contentWidth - view.getMeasuredWidth()/2;
+            final int right = left + view.getMeasuredWidth();
+            final int top = (startYOffset - view.getMeasuredHeight())>>1;
+            final int bottom = top + view.getMeasuredHeight();
+            view.layout(left,top,right,bottom);
+        }
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        measureChildren(getMeasuredWidth(),getMeasuredHeight());
+    }
+
     private void init() {
         mPaint = new Paint();
         mPaint.setColor(0xFFFFCC11);
@@ -82,25 +112,16 @@ public class ChromeLikeView extends View implements IOnExpandViewListener {
         mCirclePaint.setStyle(Paint.Style.FILL);
         mCirclePaint.setAntiAlias(true);
 
-        mDrawables = new LinkedList<>();
-        mDrawables.add(ContextCompat.getDrawable(getContext(),R.drawable.iconfont_add));
-        mDrawables.add(ContextCompat.getDrawable(getContext(),R.drawable.iconfont_refresh));
-        mDrawables.add(ContextCompat.getDrawable(getContext(),R.drawable.iconfont_close));
-
-        for ( Drawable drawable : mDrawables ){
-            int width = drawable.getMinimumWidth();
-            int height = drawable.getMinimumHeight();
-            drawable.setBounds(-width>>1,-height>>1,width>>1,height>>1);
+        int[] mDrawables = {R.drawable.selector_icon_add,R.drawable.selector_icon_refresh,R.drawable.selector_icon_close};
+        for ( int res : mDrawables ){
+            View v = new View(getContext());
+            v.setBackgroundResource(res);
+            addView(v, LayoutParams.WRAP_CONTENT,LayoutParams.WRAP_CONTENT);
         }
 
         mPath = new Path();
         reset();
         setWillNotDraw(false);
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
     public void onActionDown(MotionEvent event){
@@ -125,20 +146,33 @@ public class ChromeLikeView extends View implements IOnExpandViewListener {
         updatePath( currentX, mPrevX, mRadius, false );
         if ( Math.abs( currentX - mPrevX ) > mRadius * 1.5 ){
             if ( currentX > mPrevX ){
-                mCurrentFlag++;
-                mCurrentFlag %= mSize;
+                updateCurrentFlag(nextOfCurrentFlag());
             } else {
-                mCurrentFlag--;
-                mCurrentFlag += mSize;
-                mCurrentFlag %= mSize;
+                updateCurrentFlag(prevOfCurrentFlag());
             }
             mGummyAnimatorHelper.launchAnim(
                     currentX
                     , mPrevX
                     , mTranslate
-                    , flag2TargetTranslate(mCurrentFlag) );
+                    , flag2TargetTranslate() );
         }
     }
+
+    private int nextOfCurrentFlag(){
+        int tmp = mCurrentFlag;
+        tmp++;
+        tmp %= mSize;
+        return tmp;
+    }
+
+    private int prevOfCurrentFlag(){
+        int tmp = mCurrentFlag;
+        tmp--;
+        tmp += mSize;
+        tmp %= mSize;
+        return tmp;
+    }
+
 
     public void onActionUpOrCancel(MotionEvent event, boolean isExpanded){
         if ( !mIsFirstExpanded ) return;
@@ -156,8 +190,8 @@ public class ChromeLikeView extends View implements IOnExpandViewListener {
     private void reset(){
         updateAlpha(1);
         onExpandView(0);
-        mCurrentFlag = 1;
-        mTranslate = flag2TargetTranslate(mCurrentFlag);
+        updateCurrentFlag(1);
+        mTranslate = flag2TargetTranslate();
     }
 
     private void updatePath(float currentX, float prevX, int radius, boolean animate){
@@ -220,25 +254,13 @@ public class ChromeLikeView extends View implements IOnExpandViewListener {
         canvas.drawPath(mPath, mPaint);
         canvas.restore();
 
-        int contentWidth = mRadius*3;
-        int totalWidth = getMeasuredWidth();
-        int totalContextWidth = contentWidth * (mDrawables.size() - 1);
-        int startOffset = (totalWidth - totalContextWidth) >> 1;
-        canvas.save();
-        canvas.translate(startOffset,centerY);
-        for ( Drawable drawable : mDrawables ){
-            drawable.draw(canvas);
-            canvas.translate(contentWidth,0);
-        }
-        canvas.restore();
     }
 
     private static float distance(float x1,float y1, float x2, float y2){
         return (float) Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
     }
-
-    private int flag2TargetTranslate( int flag ){
-        return flag * mRadius *3 - mRadius *3;
+    private int flag2TargetTranslate(){
+        return mCurrentFlag * mRadius *3 - mRadius *3;
     }
 
     private static float points2Degrees(float x1, float y1, float x2, float y2){
