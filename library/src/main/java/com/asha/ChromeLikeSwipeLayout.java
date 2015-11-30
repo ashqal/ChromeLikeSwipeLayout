@@ -8,7 +8,6 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -111,24 +110,24 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 mChromeLikeView.onActionDown(event);
                 break;
             case MotionEvent.ACTION_UP:
-                Log.d(TAG, String.format("onInterceptTouchEvent ACTION_UP"));
+                //Log.d(TAG, String.format("onInterceptTouchEvent ACTION_UP"));
                 break;
             case MotionEvent.ACTION_MOVE:
-                Log.e(TAG, String.format("onInterceptTouchEvent ACTION_MOVE moving:%f",(getY - mTouchDownActor)));
+                //Log.e(TAG, String.format("onInterceptTouchEvent ACTION_MOVE moving:%f",(getY - mTouchDownActor)));
                 if ( !mBeginDragging && getY - mTouchDownActor > mTouchSlop ) {
                     mBeginDragging = true;
                 }
-                Log.d(TAG, String.format("onInterceptTouchEvent ACTION_MOVE mBeginDragging=%b",mBeginDragging));
+                //Log.d(TAG, String.format("onInterceptTouchEvent ACTION_MOVE mBeginDragging=%b",mBeginDragging));
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
-                Log.d(TAG, String.format("onInterceptTouchEvent ACTION_POINTER_DOWN"));
+                //Log.d(TAG, String.format("onInterceptTouchEvent ACTION_POINTER_DOWN"));
                 break;
             case MotionEvent.ACTION_POINTER_UP:
-                Log.d(TAG, String.format("onInterceptTouchEvent ACTION_POINTER_UP"));
+                //Log.d(TAG, String.format("onInterceptTouchEvent ACTION_POINTER_UP"));
                 break;
         }
         //mBeginDragging = true;
-        Log.d(TAG, String.format("onInterceptTouchEvent return %b", mBeginDragging));
+        //Log.d(TAG, String.format("onInterceptTouchEvent return %b", mBeginDragging));
 
         return mBeginDragging;
     }
@@ -153,7 +152,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 break;
             case MotionEvent.ACTION_MOVE:
                 mChromeLikeView.onActionMove(event,isExpanded);
-                mTopOffset = (int) ((getY - mTouchDownActor) * 0.55);
+                mTopOffset = calculateTopOffset(getY - mTouchDownActor);
                 ensureTarget();
                 View child = mTarget;
                 int currentTop = child.getTop();
@@ -172,8 +171,15 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 //Log.d(TAG,String.format("ACTION_POINTER_UP"));
                 break;
         }
-
         return true;
+    }
+
+    private int calculateTopOffset(float original){
+        float basic = original * 0.6f;
+        if ( basic > sThreshold ){
+            basic = sThreshold + (basic - sThreshold) * 0.3f;
+        }
+        return (int) basic;
     }
 
 

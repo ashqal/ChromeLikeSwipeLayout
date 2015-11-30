@@ -168,8 +168,8 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
     }
 
     private void reset(){
+        onExpandView(0,false);
         updateAlpha(1);
-        onExpandView(0,true);
         updateCurrentFlag((getChildCount() - 1) >> 1);
         mTranslate = flag2TargetTranslate();
     }
