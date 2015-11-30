@@ -2,7 +2,9 @@ package com.asha;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Build;
+import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
@@ -26,7 +28,7 @@ import java.util.List;
  */
 public class ChromeLikeSwipeLayout extends ViewGroup {
     private static final String TAG = "ChromeLikeSwipeLayout";
-    private static final int sThreshold = 200;
+    private static final int sThreshold = dp2px(120);
 
     private View mTarget; // the target of the gesture
     private ChromeLikeView mChromeLikeView;
@@ -36,7 +38,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     private float mTouchDownActor;
     private boolean mIsBusy;
     private LinkedList<IOnExpandViewListener> mExpandListeners = new LinkedList<>();
-    private static final int sThreshold2 = 800;
+    private static final int sThreshold2 = dp2px(400);
 
 
     public ChromeLikeSwipeLayout(Context context) {
@@ -310,6 +312,12 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
 
     private void setConfig(Config config){
         mChromeLikeView.setIcons(config.mIcons);
+        if ( config.mBackgroundResId != Config.DEFAULT )
+            mChromeLikeView.setBackgroundResource(config.mBackgroundResId);
+        if ( config.mBackgroundColor != Config.DEFAULT )
+            mChromeLikeView.setBackgroundColor(config.mBackgroundColor);
+        if ( config.mCircleColor != Config.DEFAULT )
+            mChromeLikeView.setCircleColor( config.mCircleColor );
     }
 
     public void notifyOnExpandListeners(float fraction, boolean isFromCancel){
@@ -340,17 +348,44 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
 
     public static class Config{
         private List<Integer> mIcons;
+        private int mCircleColor = DEFAULT;
+        private int mBackgroundResId = DEFAULT;
+        private int mBackgroundColor = DEFAULT;
+        private static final int DEFAULT = -1;
+
         private Config(){
 
         }
+
         public Config addIcon(@DrawableRes int drawableResId){
             if ( mIcons == null ) mIcons = new LinkedList<>();
             mIcons.add(drawableResId);
             return this;
         }
+
+        public Config background(@DrawableRes int backgroundResId){
+            this.mBackgroundResId = backgroundResId;
+            return this;
+        }
+
+        public Config backgroundColor(@ColorInt int color){
+            this.mBackgroundColor = color;
+            return this;
+        }
+
+        public Config circleColor(@ColorInt int color){
+            this.mCircleColor = color;
+            return this;
+        }
+
         public void setTo(ChromeLikeSwipeLayout chromeLikeSwipeLayout){
             chromeLikeSwipeLayout.setConfig(this);
         }
+    }
+
+    public static int dp2px(float valueInDp) {
+        final float scale = Resources.getSystem().getDisplayMetrics().density;
+        return (int) (valueInDp * scale + 0.5f);
     }
 
 }

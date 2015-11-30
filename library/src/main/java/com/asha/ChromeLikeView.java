@@ -23,6 +23,8 @@ import com.asha.ChromeLikeSwipeLayout.IOnExpandViewListener;
 
 import java.util.List;
 
+import static com.asha.ChromeLikeSwipeLayout.dp2px;
+
 
 /**
  * Created by hzqiujiadi on 15/11/18.
@@ -40,10 +42,11 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
     private boolean mIsFirstExpanded;
     private float mTranslate;
     private int mCurrentFlag = 1;
-    private int mRadius = 80;
+    private int mRadius = dp2px(40);
     private IOnRippleListener mRippleListener;
     private GummyAnimatorHelper mGummyAnimatorHelper = new GummyAnimatorHelper();
     private RippleAnimatorHelper mRippleAnimatorHelper = new RippleAnimatorHelper();
+    private int circleColor;
 
     public ChromeLikeView(Context context) {
         super(context);
@@ -95,7 +98,6 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
         mPaint = new Paint();
         mPaint.setColor(0xFFFFCC11);
         mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setStrokeWidth(5);
         mPaint.setAntiAlias(true);
 
         mPath = new Path();
@@ -214,10 +216,11 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
     }
 
     private void updateIconScale( float fraction ){
+        float iconFraction = iconOffsetFraction(fraction);
         for (int i = 0 ; i < getChildCount(); i++ ){
             View v = getChildAt(i);
-            ViewCompat.setScaleX(v,fraction);
-            ViewCompat.setScaleY(v,fraction);
+            ViewCompat.setScaleX(v,iconFraction);
+            ViewCompat.setScaleY(v,iconFraction);
         }
     }
 
@@ -278,14 +281,24 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
 
     @Override
     public void onExpandView(float fraction, boolean isFromCancel) {
-        float offsetFraction = offsetFraction(fraction);
-        if (isFromCancel) updateAlpha(offsetFraction);
-        updatePath(0,0,Math.round(mRadius*offsetFraction),true);
+        float circleFraction = circleOffsetFraction(fraction);
+        if (isFromCancel) updateAlpha(circleFraction);
+        updatePath(0,0,Math.round(mRadius*circleFraction),true);
         updateIconScale(fraction);
     }
 
-    private static final float factor = 0.75f;
-    private float offsetFraction(float fraction){
+    private static final float factorScaleCircle = 0.75f;
+    private static final float factorScaleIcon = 0.3f;
+
+    private float circleOffsetFraction( float fraction ){
+        return offsetFraction(fraction,factorScaleCircle);
+    }
+
+    private float iconOffsetFraction( float fraction ){
+        return offsetFraction(fraction,factorScaleIcon);
+    }
+
+    private float offsetFraction(float fraction, float factor){
         float result = (fraction - factor) / (1 - factor);
         result = result > 0 ? result : 0;
         return result;
@@ -293,6 +306,10 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
 
     public void setRippleListener(IOnRippleListener mRippleListener) {
         this.mRippleListener = mRippleListener;
+    }
+
+    public void setCircleColor(int circleColor) {
+        mPaint.setColor(circleColor);
     }
 
     public interface IOnRippleListener {

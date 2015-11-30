@@ -25,6 +25,7 @@ public class ListViewActivity extends AppCompatActivity {
                 .addIcon(R.drawable.selector_icon_add)
                 .addIcon(R.drawable.selector_icon_refresh)
                 .addIcon(R.drawable.selector_icon_close)
+                .circleColor(0xFF11CCFF)
                 .setTo(chromeLikeSwipeLayout);
 
         ListView listView = (ListView) findViewById(R.id.listView);
