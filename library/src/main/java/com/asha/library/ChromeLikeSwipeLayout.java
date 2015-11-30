@@ -149,7 +149,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 break;
             case MotionEvent.ACTION_MOVE:
                 mChromeLikeView.onActionMove(event,isExpanded);
-                mTopOffset = (int) ((getY - mTouchDownActor) * 0.6);
+                mTopOffset = (int) ((getY - mTouchDownActor) * 0.55);
                 ensureTarget();
                 View child = mTarget;
                 int currentTop = child.getTop();

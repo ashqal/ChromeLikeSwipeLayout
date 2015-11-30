@@ -13,7 +13,6 @@ import android.support.v4.animation.ValueAnimatorCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,15 +34,13 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
     private static Interpolator sBounceInterpolator = new BounceInterpolator();
     private static Interpolator sInterpolator = new FastOutSlowInInterpolator();
     private Paint mPaint;
-    private Paint mCirclePaint;
     private Path mPath;
     private float mPrevX;
     private float mDegrees;
     private boolean mIsFirstExpanded;
     private float mTranslate;
     private int mCurrentFlag = 1;
-    private int mSize = 3;
-    private int mRadius = 85;
+    private int mRadius = 80;
     private IOnRippleListener mRippleListener;
     private GummyAnimatorHelper mGummyAnimatorHelper = new GummyAnimatorHelper();
     private RippleAnimatorHelper mRippleAnimatorHelper = new RippleAnimatorHelper();
@@ -99,11 +96,7 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
         mPaint.setColor(0xFFFFCC11);
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setStrokeWidth(5);
-
-        mCirclePaint = new Paint();
-        mCirclePaint.setColor(0xFFFFFFFF);
-        mCirclePaint.setStyle(Paint.Style.FILL);
-        mCirclePaint.setAntiAlias(true);
+        mPaint.setAntiAlias(true);
 
         mPath = new Path();
         reset();
@@ -132,12 +125,14 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
 
         if ( !isExpanded ) return;
 
+        if (getChildCount() == 0) return;
+
         float currentX = event.getX();
         if ( mGummyAnimatorHelper.isAnimationStarted() ){
             mGummyAnimatorHelper.updateFromX(currentX);
             return;
         }
-
+        updateAlpha(1);
         updatePath( currentX, mPrevX, mRadius, false );
         if ( Math.abs( currentX - mPrevX ) > mRadius * 1.5 ){
             if ( currentX > mPrevX ){
@@ -165,7 +160,7 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
     private void reset(){
         updateAlpha(1);
         onExpandView(0,true);
-        updateCurrentFlag(1);
+        updateCurrentFlag(getChildCount() >> 1);
         mTranslate = flag2TargetTranslate();
     }
 
@@ -239,20 +234,23 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
     private int nextOfCurrentFlag(){
         int tmp = mCurrentFlag;
         tmp++;
-        tmp %= mSize;
+        tmp %= getChildCount();
         return tmp;
     }
 
     private int prevOfCurrentFlag(){
         int tmp = mCurrentFlag;
         tmp--;
-        tmp += mSize;
-        tmp %= mSize;
+        tmp += getChildCount();
+        tmp %= getChildCount();
         return tmp;
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
+
+        if ( getChildCount() == 0 ) return;
+
         int centerX = getMeasuredWidth() >> 1;
         int centerY = getMeasuredHeight() >> 1;
 
@@ -280,11 +278,25 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
 
     @Override
     public void onExpandView(float fraction, boolean isFromCancel) {
-        if (isFromCancel) updateAlpha(fraction);
-        updatePath(0,0,Math.round(mRadius*fraction),true);
+        float offsetFraction = offsetFraction(fraction);
+        if (isFromCancel) updateAlpha(offsetFraction);
+        updatePath(0,0,Math.round(mRadius*offsetFraction),true);
         updateIconScale(fraction);
+    }
 
-        Log.e(TAG,"onExpandView:" + fraction);
+    private static final float factor = 0.75f;
+    private float offsetFraction(float fraction){
+        float result = (fraction - factor) / (1 - factor);
+        result = result > 0 ? result : 0;
+        return result;
+    }
+
+    public void setRippleListener(IOnRippleListener mRippleListener) {
+        this.mRippleListener = mRippleListener;
+    }
+
+    public interface IOnRippleListener {
+        void onRippleAnimFinished();
     }
 
     public class RippleAnimatorHelper implements AnimatorUpdateListenerCompat, AnimatorListenerCompat {
@@ -420,13 +432,5 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
             float startFloat = startValue.floatValue();
             return startFloat + fraction * (endValue.floatValue() - startFloat);
         }
-    }
-
-    public void setRippleListener(IOnRippleListener mRippleListener) {
-        this.mRippleListener = mRippleListener;
-    }
-
-    public interface IOnRippleListener {
-        void onRippleAnimFinished();
     }
 }
