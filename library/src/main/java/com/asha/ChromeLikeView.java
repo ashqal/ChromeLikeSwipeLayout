@@ -41,12 +41,11 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
     private float mDegrees;
     private boolean mIsFirstExpanded;
     private float mTranslate;
-    private int mCurrentFlag = 1;
+    private int mCurrentFlag;
     private int mRadius = dp2px(40);
     private IOnRippleListener mRippleListener;
     private GummyAnimatorHelper mGummyAnimatorHelper = new GummyAnimatorHelper();
     private RippleAnimatorHelper mRippleAnimatorHelper = new RippleAnimatorHelper();
-    private int circleColor;
 
     public ChromeLikeView(Context context) {
         super(context);
@@ -69,18 +68,27 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
         init();
     }
 
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        int contentWidth = mRadius*3;
+    private int getItemWidth(){
+        return mRadius*3;
+    }
+
+    private int getCircleStartX(){
+        int contentWidth = getItemWidth();
         int totalWidth = getMeasuredWidth();
         int totalContextWidth = contentWidth * (getChildCount() - 1);
         int startXOffset = (totalWidth - totalContextWidth) >> 1;
+        return startXOffset;
+    }
 
+    @Override
+    protected void onLayout(boolean changed, int l, int t, int r, int b) {
+
+        int startXOffset = getCircleStartX();
         int startYOffset = (b - t);
 
         for (int i = 0 ; i < getChildCount() ; i++ ){
             View view = getChildAt(i);
-            final int left = startXOffset + i * contentWidth - view.getMeasuredWidth()/2;
+            final int left = startXOffset + i * getItemWidth() - view.getMeasuredWidth()/2;
             final int right = left + view.getMeasuredWidth();
             final int top = (startYOffset - view.getMeasuredHeight())>>1;
             final int bottom = top + view.getMeasuredHeight();
@@ -136,7 +144,7 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
         }
         updateAlpha(1);
         updatePath( currentX, mPrevX, mRadius, false );
-        if ( Math.abs( currentX - mPrevX ) > mRadius * 1.5 ){
+        if ( Math.abs( currentX - mPrevX ) > getItemWidth() * 0.5 ){
             if ( currentX > mPrevX ){
                 updateCurrentFlag(nextOfCurrentFlag());
             } else {
@@ -162,7 +170,7 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
     private void reset(){
         updateAlpha(1);
         onExpandView(0,true);
-        updateCurrentFlag(getChildCount() >> 1);
+        updateCurrentFlag((getChildCount() - 1) >> 1);
         mTranslate = flag2TargetTranslate();
     }
 
@@ -253,14 +261,11 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
     protected void onDraw(Canvas canvas) {
 
         if ( getChildCount() == 0 ) return;
-
-        int centerX = getMeasuredWidth() >> 1;
         int centerY = getMeasuredHeight() >> 1;
 
         canvas.drawColor(0xFF333333);
-
         canvas.save();
-        canvas.translate(centerX + mTranslate, centerY);
+        canvas.translate(mTranslate, centerY);
         canvas.rotate(mDegrees);
         canvas.drawPath(mPath, mPaint);
         canvas.restore();
@@ -271,7 +276,8 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
         return (float) Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
     }
     private int flag2TargetTranslate(){
-        return mCurrentFlag * mRadius *3 - mRadius *3;
+        int startXOffset = getCircleStartX();
+        return startXOffset + getItemWidth() * mCurrentFlag;
     }
 
     private static float points2Degrees(float x1, float y1, float x2, float y2){
