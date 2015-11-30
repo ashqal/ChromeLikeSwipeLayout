@@ -319,7 +319,7 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
     }
 
     public interface IOnRippleListener {
-        void onRippleAnimFinished();
+        void onRippleAnimFinished(int index);
     }
 
     public class RippleAnimatorHelper implements AnimatorUpdateListenerCompat, AnimatorListenerCompat {
@@ -359,7 +359,7 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
         public void onAnimationEnd(ValueAnimatorCompat animation) {
             mAnimationStarted = false;
             if ( !mEventDispatched && mRippleListener != null ){
-                mRippleListener.onRippleAnimFinished();
+                mRippleListener.onRippleAnimFinished(mCurrentFlag);
                 mEventDispatched = true;
             }
         }

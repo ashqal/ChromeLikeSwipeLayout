@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.asha.ChromeLikeSwipeLayout;
 
@@ -27,6 +28,12 @@ public class ListViewActivity extends AppCompatActivity {
                 //.addIcon(R.drawable.selector_icon_refresh)
                 .addIcon(R.drawable.selector_icon_close)
                 .circleColor(0xFF11CCFF)
+                .listenItemSelected(new ChromeLikeSwipeLayout.IOnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(int index) {
+                        Toast.makeText(ListViewActivity.this, "onItemSelected:" + index, Toast.LENGTH_SHORT).show();
+                    }
+                })
                 .setTo(chromeLikeSwipeLayout);
 
         ListView listView = (ListView) findViewById(R.id.listView);

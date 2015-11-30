@@ -37,6 +37,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     private int mTouchSlop;
     private float mTouchDownActor;
     private boolean mIsBusy;
+    private IOnItemSelectedListener mOnItemSelectedListener;
     private LinkedList<IOnExpandViewListener> mExpandListeners = new LinkedList<>();
     private static final int sThreshold2 = dp2px(400);
 
@@ -69,10 +70,13 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         mChromeLikeView = new ChromeLikeView(getContext());
         mChromeLikeView.setRippleListener(new ChromeLikeView.IOnRippleListener() {
             @Override
-            public void onRippleAnimFinished() {
+            public void onRippleAnimFinished(int index) {
                 mIsBusy = false;
                 launchResetAnim(false);
                 mBeginDragging = false;
+                if ( mOnItemSelectedListener != null ){
+                    mOnItemSelectedListener.onItemSelected(index);
+                }
             }
         });
         addOnExpandViewListener(mChromeLikeView);
@@ -318,6 +322,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             mChromeLikeView.setBackgroundColor(config.mBackgroundColor);
         if ( config.mCircleColor != Config.DEFAULT )
             mChromeLikeView.setCircleColor( config.mCircleColor );
+        mOnItemSelectedListener = config.mOnItemSelectedListener;
     }
 
     public void notifyOnExpandListeners(float fraction, boolean isFromCancel){
@@ -348,6 +353,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
 
     public static class Config{
         private List<Integer> mIcons;
+        private IOnItemSelectedListener mOnItemSelectedListener;
         private int mCircleColor = DEFAULT;
         private int mBackgroundResId = DEFAULT;
         private int mBackgroundColor = DEFAULT;
@@ -378,14 +384,24 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             return this;
         }
 
+        public Config listenItemSelected(IOnItemSelectedListener listener){
+            this.mOnItemSelectedListener = listener;
+            return this;
+        }
+
         public void setTo(ChromeLikeSwipeLayout chromeLikeSwipeLayout){
             chromeLikeSwipeLayout.setConfig(this);
         }
+
     }
 
     public static int dp2px(float valueInDp) {
         final float scale = Resources.getSystem().getDisplayMetrics().density;
         return (int) (valueInDp * scale + 0.5f);
+    }
+
+    public interface IOnItemSelectedListener{
+        void onItemSelected(int index);
     }
 
 }
