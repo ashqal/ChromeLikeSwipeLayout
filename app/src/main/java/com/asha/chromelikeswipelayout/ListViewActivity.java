@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 
-import com.asha.library.ChromeLikeSwipeLayout;
+import com.asha.ChromeLikeSwipeLayout;
 
 /**
  * Created by hzqiujiadi on 15/11/27.

@@ -1,4 +1,4 @@
-package com.asha.library;
+package com.asha.layout;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

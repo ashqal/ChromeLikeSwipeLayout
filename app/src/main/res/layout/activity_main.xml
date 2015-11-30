@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.asha.chromelikeswipelayout.MainActivity">
-    <com.asha.library.ChromeLikeSwipeLayout
+    <com.asha.ChromeLikeSwipeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#ffeda9"
@@ -39,5 +39,5 @@
                     android:text="I am in ScrollView" />
             </LinearLayout>
         </ScrollView>
-    </com.asha.library.ChromeLikeSwipeLayout>
+    </com.asha.ChromeLikeSwipeLayout>
 </RelativeLayout>

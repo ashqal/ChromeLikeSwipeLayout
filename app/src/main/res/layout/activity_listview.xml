@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android">
-    <com.asha.library.ChromeLikeSwipeLayout
+    <com.asha.ChromeLikeSwipeLayout
         android:id="@+id/chrome_like_swipe_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -12,5 +12,5 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
         </ListView>
-    </com.asha.library.ChromeLikeSwipeLayout>
+    </com.asha.ChromeLikeSwipeLayout>
 </RelativeLayout>
