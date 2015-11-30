@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 
+import com.asha.library.ChromeLikeSwipeLayout;
+
 /**
  * Created by hzqiujiadi on 15/11/27.
  * hzqiujiadi ashqalcn@gmail.com
@@ -18,6 +20,13 @@ public class ListViewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_listview);
+
+        ChromeLikeSwipeLayout chromeLikeSwipeLayout = (ChromeLikeSwipeLayout) findViewById(R.id.chrome_like_swipe_layout);
+        ChromeLikeSwipeLayout.makeConfig()
+                .addIcon(R.drawable.selector_icon_add)
+                .addIcon(R.drawable.selector_icon_refresh)
+                .addIcon(R.drawable.selector_icon_close)
+                .setTo(chromeLikeSwipeLayout);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

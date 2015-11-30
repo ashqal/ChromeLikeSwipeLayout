@@ -3,6 +3,7 @@ package com.asha.library;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
+import android.support.annotation.DrawableRes;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -19,6 +20,7 @@ import android.widget.ScrollView;
 import com.asha.library.ChromeLikeView.IOnRippleListener;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by hzqiujiadi on 15/11/20.
@@ -153,7 +155,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 int currentTop = child.getTop();
                 if ( mBeginDragging ) {
                     if ( !isExpanded )
-                        notifyOnExpandListeners( currentTop * 1.0f / sThreshold );
+                        notifyOnExpandListeners( currentTop * 1.0f / sThreshold, true);
                     childOffsetTopAndBottom(currentTop,mTopOffset);
                 }
                 invalidate();
@@ -210,8 +212,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
                 float step = (to - from) * interpolatedTime + from;
-                if ( isFromCancel )
-                    notifyOnExpandListeners( mTarget.getTop() * 1.0f / sThreshold );
+                notifyOnExpandListeners( mTarget.getTop() * 1.0f / sThreshold ,isFromCancel);
                 childOffsetTopAndBottom( mTarget.getTop(), Math.round(step) );
             }
         };
@@ -309,10 +310,14 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         }
     }
 
+    private void setConfig(Config config){
+        mChromeLikeView.setIcons(config.mIcons);
+    }
 
-    public void notifyOnExpandListeners(float fraction){
+    public void notifyOnExpandListeners(float fraction, boolean isFromCancel){
+        fraction = fraction < 1 ? fraction : 1;
         for ( IOnExpandViewListener listener : mExpandListeners )
-            listener.onExpandView(fraction);
+            listener.onExpandView(fraction,isFromCancel);
     }
 
     public void addOnExpandViewListener(IOnExpandViewListener listener){
@@ -328,7 +333,26 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     }
 
     public interface IOnExpandViewListener {
-        void onExpandView(float fraction);
+        void onExpandView(float fraction, boolean isFromCancel);
+    }
+
+    public static Config makeConfig(){
+        return new Config();
+    }
+
+    public static class Config{
+        private List<Integer> mIcons;
+        private Config(){
+
+        }
+        public Config addIcon(@DrawableRes int drawableResId){
+            if ( mIcons == null ) mIcons = new LinkedList<>();
+            mIcons.add(drawableResId);
+            return this;
+        }
+        public void setTo(ChromeLikeSwipeLayout chromeLikeSwipeLayout){
+            chromeLikeSwipeLayout.setConfig(this);
+        }
     }
 
 }
