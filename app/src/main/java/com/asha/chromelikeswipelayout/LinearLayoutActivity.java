@@ -6,6 +6,10 @@ import android.widget.Toast;
 
 import com.asha.ChromeLikeSwipeLayout;
 
+/**
+ * Created by hzqiujiadi on 15/11/27.
+ * hzqiujiadi ashqalcn@gmail.com
+ */
 public class LinearLayoutActivity extends AppCompatActivity {
 
     @Override

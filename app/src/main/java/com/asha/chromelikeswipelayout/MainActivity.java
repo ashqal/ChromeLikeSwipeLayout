@@ -5,6 +5,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
+/**
+ * Created by hzqiujiadi on 15/11/27.
+ * hzqiujiadi ashqalcn@gmail.com
+ */
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -25,6 +29,11 @@ public class MainActivity extends AppCompatActivity {
 
     public void OnLinearLayoutClicked(View view) {
         Intent i = new Intent(this,LinearLayoutActivity.class);
+        startActivity(i);
+    }
+
+    public void OnRecyclerViewClicked(View view) {
+        Intent i = new Intent(this,RecyclerViewActivity.class);
         startActivity(i);
     }
 }

@@ -29,6 +29,15 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     private static final String TAG = "ChromeLikeSwipeLayout";
     private static final int sThreshold = dp2px(120);
     private static final int sThreshold2 = dp2px(400);
+    private static Class sRecyclerViewClz;
+    static {
+        try {
+            sRecyclerViewClz = Class.forName("android.support.v7.widget.RecyclerView");
+        } catch (ClassNotFoundException e) {
+            // ignore
+            // e.printStackTrace();
+        }
+    }
 
     private View mTarget; // the target of the gesture
     private ChromeLikeLayout mChromeLikeLayout;
@@ -242,8 +251,10 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
 
     @Override
     public void addView(View child, int index, LayoutParams params) {
+
         boolean touchAlwaysTrue =  child instanceof ScrollView
                 || child instanceof AbsListView
+                || (sRecyclerViewClz != null && child.getClass().isAssignableFrom(sRecyclerViewClz))
                 || child instanceof TouchAlwaysTrueLayout
                 || child instanceof ChromeLikeLayout;
 

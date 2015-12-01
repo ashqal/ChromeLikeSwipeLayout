@@ -8,6 +8,10 @@ import com.asha.ChromeLikeSwipeLayout;
 
 import static com.asha.ChromeLikeSwipeLayout.dp2px;
 
+/**
+ * Created by hzqiujiadi on 15/12/01.
+ * hzqiujiadi ashqalcn@gmail.com
+ */
 public class ScrollViewActivity extends AppCompatActivity {
 
     @Override
