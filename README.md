@@ -1,12 +1,12 @@
 # ChromeLikeSwipeLayout
 Pull down, and execute more action!
 
+## Demo Video
+View the [demo video](https://youtu.be/z0FjPeJEx7o) on Youtube.
+
 ## Screenshot
 ![Logo](https://raw.githubusercontent.com/ashqal/ChromeLikeSwipeLayout/master/screenshot/screenshot.png)
 </br>
-
-## Demo Video
-View the [demo video](https://youtu.be/z0FjPeJEx7o) on Youtube.
 
 ## Usage
 ```java
