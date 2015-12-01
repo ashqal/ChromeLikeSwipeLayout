@@ -30,11 +30,11 @@ import static com.asha.ChromeLikeSwipeLayout.dp2px;
  * Created by hzqiujiadi on 15/11/18.
  * hzqiujiadi ashqalcn@gmail.com
  */
-public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
+public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener {
     private static final String TAG = "ChromeLikeView";
     private static final float sMagicNumber = 0.55228475f;
-    private static Interpolator sBounceInterpolator = new BounceInterpolator();
-    private static Interpolator sInterpolator = new FastOutSlowInInterpolator();
+    private static final Interpolator sBounceInterpolator = new BounceInterpolator();
+    private static final Interpolator sInterpolator = new FastOutSlowInInterpolator();
     private Paint mPaint;
     private Path mPath;
     private float mPrevX;
@@ -43,41 +43,42 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
     private float mTranslate;
     private int mCurrentFlag;
     private int mRadius = dp2px(40);
+    private int mGap = dp2px(0);
     private IOnRippleListener mRippleListener;
     private GummyAnimatorHelper mGummyAnimatorHelper = new GummyAnimatorHelper();
     private RippleAnimatorHelper mRippleAnimatorHelper = new RippleAnimatorHelper();
 
-    public ChromeLikeView(Context context) {
+
+    public ChromeLikeLayout(Context context) {
         super(context);
         init();
     }
 
-    public ChromeLikeView(Context context, AttributeSet attrs) {
+    public ChromeLikeLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public ChromeLikeView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public ChromeLikeLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public ChromeLikeView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+    public ChromeLikeLayout(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init();
     }
 
     private int getItemWidth(){
-        return mRadius*3;
+        return mRadius*2 + mGap;
     }
 
     private int getCircleStartX(){
         int contentWidth = getItemWidth();
         int totalWidth = getMeasuredWidth();
         int totalContextWidth = contentWidth * (getChildCount() - 1);
-        int startXOffset = (totalWidth - totalContextWidth) >> 1;
-        return startXOffset;
+        return (totalWidth - totalContextWidth) >> 1;
     }
 
     @Override
@@ -122,7 +123,11 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
         }
     }
 
-    public void onActionDown(MotionEvent event){
+    public void setRadius(int radius) {
+        this.mRadius = radius;
+    }
+
+    public void onActionDown(){
         reset();
     }
 
@@ -142,14 +147,12 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
             mGummyAnimatorHelper.updateFromX(currentX);
             return;
         }
+
         updateAlpha(1);
         updatePath( currentX, mPrevX, mRadius, false );
         if ( Math.abs( currentX - mPrevX ) > getItemWidth() * 0.5 ){
-            if ( currentX > mPrevX ){
-                updateCurrentFlag(nextOfCurrentFlag());
-            } else {
-                updateCurrentFlag(prevOfCurrentFlag());
-            }
+            if ( currentX > mPrevX ) updateCurrentFlag(nextOfCurrentFlag());
+            else updateCurrentFlag(prevOfCurrentFlag());
             mGummyAnimatorHelper.launchAnim(
                     currentX
                     , mPrevX
@@ -158,7 +161,7 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
         }
     }
 
-    public void onActionUpOrCancel(MotionEvent event, boolean isExpanded){
+    public void onActionUpOrCancel(boolean isExpanded){
         if ( !mIsFirstExpanded ) return;
         mIsFirstExpanded = false;
         if ( isExpanded ){
@@ -318,6 +321,10 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
         mPaint.setColor(circleColor);
     }
 
+    public void setGap(int gap) {
+        this.mGap = gap;
+    }
+
     public interface IOnRippleListener {
         void onRippleAnimFinished(int index);
     }
@@ -370,7 +377,7 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
                 mRippleAnimator = AnimatorCompatHelper.emptyValueAnimator();
                 mRippleAnimator.setDuration(500);
                 mRippleAnimator.addUpdateListener(this);
-                mRippleAnimator.setTarget(ChromeLikeView.this);
+                mRippleAnimator.setTarget(ChromeLikeLayout.this);
                 mRippleAnimator.addListener(this);
             }
             mAnimFromRadius = fromRadius;
@@ -429,7 +436,7 @@ public class ChromeLikeView extends ViewGroup implements IOnExpandViewListener {
                 mGummyAnimator = AnimatorCompatHelper.emptyValueAnimator();
                 mGummyAnimator.setDuration(200);
                 mGummyAnimator.addUpdateListener(this);
-                mGummyAnimator.setTarget(ChromeLikeView.this);
+                mGummyAnimator.setTarget(ChromeLikeLayout.this);
                 mGummyAnimator.addListener(this);
             }
             mAnimFromX = fromX;

@@ -28,9 +28,10 @@ import java.util.List;
 public class ChromeLikeSwipeLayout extends ViewGroup {
     private static final String TAG = "ChromeLikeSwipeLayout";
     private static final int sThreshold = dp2px(120);
+    private static final int sThreshold2 = dp2px(400);
 
     private View mTarget; // the target of the gesture
-    private ChromeLikeView mChromeLikeView;
+    private ChromeLikeLayout mChromeLikeLayout;
     private boolean mBeginDragging;
     private int mTopOffset;
     private int mTouchSlop;
@@ -38,7 +39,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     private boolean mIsBusy;
     private IOnItemSelectedListener mOnItemSelectedListener;
     private LinkedList<IOnExpandViewListener> mExpandListeners = new LinkedList<>();
-    private static final int sThreshold2 = dp2px(400);
+
 
 
     public ChromeLikeSwipeLayout(Context context) {
@@ -66,8 +67,8 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mTouchSlop = configuration.getScaledTouchSlop();
 
-        mChromeLikeView = new ChromeLikeView(getContext());
-        mChromeLikeView.setRippleListener(new ChromeLikeView.IOnRippleListener() {
+        mChromeLikeLayout = new ChromeLikeLayout(getContext());
+        mChromeLikeLayout.setRippleListener(new ChromeLikeLayout.IOnRippleListener() {
             @Override
             public void onRippleAnimFinished(int index) {
                 mIsBusy = false;
@@ -78,8 +79,8 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 }
             }
         });
-        addOnExpandViewListener(mChromeLikeView);
-        addView(mChromeLikeView);
+        addOnExpandViewListener(mChromeLikeLayout);
+        addView(mChromeLikeLayout);
     }
 
     @Override
@@ -107,7 +108,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 }
                 mTouchDownActor = getY;
                 mBeginDragging = false;
-                mChromeLikeView.onActionDown(event);
+                mChromeLikeLayout.onActionDown();
                 break;
             case MotionEvent.ACTION_UP:
                 //Log.d(TAG, String.format("onInterceptTouchEvent ACTION_UP"));
@@ -143,15 +144,15 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             case MotionEvent.ACTION_DOWN:
                 break;
             case MotionEvent.ACTION_CANCEL:
-                mChromeLikeView.onActionUpOrCancel(event,isExpanded);
+                mChromeLikeLayout.onActionUpOrCancel(isExpanded);
                 break;
             case MotionEvent.ACTION_UP:
-                mChromeLikeView.onActionUpOrCancel(event,isExpanded);
+                mChromeLikeLayout.onActionUpOrCancel(isExpanded);
                 executeAction();
 
                 break;
             case MotionEvent.ACTION_MOVE:
-                mChromeLikeView.onActionMove(event,isExpanded);
+                mChromeLikeLayout.onActionMove(event,isExpanded);
                 mTopOffset = calculateTopOffset(getY - mTouchDownActor);
                 ensureTarget();
                 View child = mTarget;
@@ -198,7 +199,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         }
         mTarget.offsetTopAndBottom( target );
 
-        mChromeLikeView.offsetTopAndBottom( target );
+        mChromeLikeLayout.offsetTopAndBottom( target );
         requestLayout();
     }
 
@@ -237,7 +238,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         boolean touchAlwaysTrue =  child instanceof ScrollView
                 || child instanceof AbsListView
                 || child instanceof TouchAlwaysTrueLayout
-                || child instanceof ChromeLikeView;
+                || child instanceof ChromeLikeLayout;
 
         if ( !touchAlwaysTrue ) child = TouchAlwaysTrueLayout.wrap(child);
         super.addView(child,index,params);
@@ -263,7 +264,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         int childHeight = height - getPaddingBottom();
         child.layout(childLeft, childTop, childLeft + childWidth, childTop + childHeight);
 
-        child = mChromeLikeView;
+        child = mChromeLikeLayout;
         childLeft = getPaddingLeft();
         childTop = mTarget.getTop() - child.getMeasuredHeight();
         childWidth = width - getPaddingLeft() - getPaddingRight();
@@ -286,7 +287,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(
                 getMeasuredHeight() - getPaddingTop() - getPaddingBottom(), MeasureSpec.EXACTLY));
 
-        mChromeLikeView.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+        mChromeLikeLayout.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(mTarget.getTop(), MeasureSpec.EXACTLY));
     }
 
@@ -311,9 +312,9 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         if (mTarget == null) {
             for (int i = 0; i < getChildCount(); i++) {
                 View child = getChildAt(i);
-                if (!child.equals(mChromeLikeView)) {
+                if (!child.equals(mChromeLikeLayout)) {
                     mTarget = child;
-                    mChromeLikeView.bringToFront();
+                    mChromeLikeLayout.bringToFront();
                     break;
                 }
             }
@@ -321,13 +322,17 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     }
 
     private void setConfig(Config config){
-        mChromeLikeView.setIcons(config.mIcons);
+        mChromeLikeLayout.setIcons(config.mIcons);
         if ( config.mBackgroundResId != Config.DEFAULT )
-            mChromeLikeView.setBackgroundResource(config.mBackgroundResId);
+            mChromeLikeLayout.setBackgroundResource(config.mBackgroundResId);
         if ( config.mBackgroundColor != Config.DEFAULT )
-            mChromeLikeView.setBackgroundColor(config.mBackgroundColor);
+            mChromeLikeLayout.setBackgroundColor(config.mBackgroundColor);
         if ( config.mCircleColor != Config.DEFAULT )
-            mChromeLikeView.setCircleColor( config.mCircleColor );
+            mChromeLikeLayout.setCircleColor(config.mCircleColor);
+        if ( config.mRadius != Config.DEFAULT )
+            mChromeLikeLayout.setRadius(config.mRadius);
+        if ( config.mRadius != Config.DEFAULT )
+            mChromeLikeLayout.setGap(config.mGap);
         mOnItemSelectedListener = config.mOnItemSelectedListener;
     }
 
@@ -363,6 +368,8 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         private int mCircleColor = DEFAULT;
         private int mBackgroundResId = DEFAULT;
         private int mBackgroundColor = DEFAULT;
+        private int mRadius = DEFAULT;
+        private int mGap = DEFAULT;
         private static final int DEFAULT = -1;
 
         private Config(){
@@ -395,10 +402,19 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             return this;
         }
 
+        public Config radius(int radius){
+            this.mRadius = radius;
+            return this;
+        }
+
+        public Config gap(int gap){
+            this.mGap = gap;
+            return this;
+        }
+
         public void setTo(ChromeLikeSwipeLayout chromeLikeSwipeLayout){
             chromeLikeSwipeLayout.setConfig(this);
         }
-
     }
 
     public static int dp2px(float valueInDp) {
