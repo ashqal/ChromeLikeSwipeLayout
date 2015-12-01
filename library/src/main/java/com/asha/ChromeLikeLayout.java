@@ -6,18 +6,15 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.os.Build;
-import android.support.v4.animation.AnimatorCompatHelper;
-import android.support.v4.animation.AnimatorListenerCompat;
-import android.support.v4.animation.AnimatorUpdateListenerCompat;
-import android.support.v4.animation.ValueAnimatorCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.view.animation.BounceInterpolator;
-import android.view.animation.Interpolator;
+import android.view.animation.Transformation;
 
 import com.asha.ChromeLikeSwipeLayout.IOnExpandViewListener;
 
@@ -33,8 +30,6 @@ import static com.asha.ChromeLikeSwipeLayout.dp2px;
 public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener {
     private static final String TAG = "ChromeLikeView";
     private static final float sMagicNumber = 0.55228475f;
-    private static final Interpolator sBounceInterpolator = new BounceInterpolator();
-    private static final Interpolator sInterpolator = new FastOutSlowInInterpolator();
     private Paint mPaint;
     private Path mPath;
     private float mPrevX;
@@ -230,6 +225,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
                 , -realShort, 0);
         mPath.lineTo(0, 0);
 
+        //postInvalidate();
         invalidate();
     }
 
@@ -333,41 +329,55 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         void onRippleAnimFinished(int index);
     }
 
-    public class RippleAnimatorHelper implements AnimatorUpdateListenerCompat, AnimatorListenerCompat {
+    public class RippleAnimatorHelper implements Animation.AnimationListener {
 
         private float mAnimFromRadius;
         private float mAnimToRadius;
-        private ValueAnimatorCompat mRippleAnimator;
         private boolean mAnimationStarted;
         private boolean mEventDispatched;
 
-        @Override
-        public void onAnimationCancel(ValueAnimatorCompat animation) {
-            mAnimationStarted = false;
-        }
 
-        @Override
-        public void onAnimationRepeat(ValueAnimatorCompat animation) {
-
-        }
-
-        @Override
-        public void onAnimationUpdate(ValueAnimatorCompat animation) {
-            float interpolation = sInterpolator.getInterpolation(animation.getAnimatedFraction());
+        public void onAnimationUpdate(float interpolation) {
             int currentRadius = FloatEvaluator.evaluate(interpolation,mAnimFromRadius,mAnimToRadius).intValue();
             updatePath(0, 0, currentRadius, true);
             updateAlpha(1-interpolation);
+        }
 
+        public void launchAnim(float fromRadius, float toRadius) {
+
+            if ( ChromeLikeLayout.this.getChildCount() == 0 ){
+                onAnimationEnd(null);
+                return;
+            }
+
+            mAnimFromRadius = fromRadius;
+            mAnimToRadius = toRadius;
+            Animation animation = new Animation() {
+                @Override
+                protected void applyTransformation(float interpolatedTime, Transformation t) {
+                    onAnimationUpdate(interpolatedTime);
+                }
+            };
+            animation.setDuration(300);
+            animation.setInterpolator(new FastOutSlowInInterpolator());
+            animation.setAnimationListener(this);
+            View target = ChromeLikeLayout.this.getChildAt(mCurrentFlag);
+            target.clearAnimation();
+            target.startAnimation(animation);
+        }
+
+        public boolean isAnimationStarted() {
+            return mAnimationStarted;
         }
 
         @Override
-        public void onAnimationStart(ValueAnimatorCompat animation) {
+        public void onAnimationStart(Animation animation) {
             mAnimationStarted = true;
             mEventDispatched = false;
         }
 
         @Override
-        public void onAnimationEnd(ValueAnimatorCompat animation) {
+        public void onAnimationEnd(Animation animation) {
             mAnimationStarted = false;
             if ( !mEventDispatched && mRippleListener != null ){
                 mRippleListener.onRippleAnimFinished(mCurrentFlag);
@@ -375,80 +385,46 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             }
         }
 
-        public void launchAnim(float fromRadius, float toRadius) {
+        @Override
+        public void onAnimationRepeat(Animation animation) {
 
-            if ( mRippleAnimator == null ){
-                mRippleAnimator = AnimatorCompatHelper.emptyValueAnimator();
-                mRippleAnimator.setDuration(500);
-                mRippleAnimator.addUpdateListener(this);
-                mRippleAnimator.setTarget(ChromeLikeLayout.this);
-                mRippleAnimator.addListener(this);
-            }
-            mAnimFromRadius = fromRadius;
-            mAnimToRadius = toRadius;
-            mRippleAnimator.cancel();
-            mRippleAnimator.start();
-        }
-
-        public boolean isAnimationStarted() {
-            return mAnimationStarted;
         }
     }
 
 
-    public class GummyAnimatorHelper implements AnimatorUpdateListenerCompat, AnimatorListenerCompat {
+    public class GummyAnimatorHelper implements Animation.AnimationListener   {
 
         private float mAnimFromX;
         private float mAnimToX;
         private float mAnimFromTranslate;
         private float mAnimToTranslate;
-        private ValueAnimatorCompat mGummyAnimator;
         private boolean mAnimationStarted;
 
-        @Override
-        public void onAnimationCancel(ValueAnimatorCompat animation) {
-            mAnimationStarted = false;
-        }
 
-        @Override
-        public void onAnimationRepeat(ValueAnimatorCompat animation) {
-
-        }
-
-        @Override
-        public void onAnimationUpdate(ValueAnimatorCompat animation) {
-            float interpolation = sBounceInterpolator.getInterpolation(animation.getAnimatedFraction());
+        public void onAnimationUpdate(float interpolation) {
             Float currentX = FloatEvaluator.evaluate(interpolation,mAnimFromX,mAnimToX);
             mTranslate = FloatEvaluator.evaluate(interpolation, mAnimFromTranslate, mAnimToTranslate);
             updatePath(currentX, mAnimToX, mRadius, true);
         }
 
-        @Override
-        public void onAnimationStart(ValueAnimatorCompat animation) {
-            mAnimationStarted = true;
-        }
-
-        @Override
-        public void onAnimationEnd(ValueAnimatorCompat animation) {
-            mAnimationStarted = false;
-            mPrevX = mAnimFromX;
-        }
-
         public void launchAnim(float fromX, float toX, float fromTranslate, float toTranslate) {
 
-            if ( mGummyAnimator == null ){
-                mGummyAnimator = AnimatorCompatHelper.emptyValueAnimator();
-                mGummyAnimator.setDuration(200);
-                mGummyAnimator.addUpdateListener(this);
-                mGummyAnimator.setTarget(ChromeLikeLayout.this);
-                mGummyAnimator.addListener(this);
-            }
             mAnimFromX = fromX;
             mAnimToX = toX;
             mAnimFromTranslate = fromTranslate;
             mAnimToTranslate = toTranslate;
-            mGummyAnimator.cancel();
-            mGummyAnimator.start();
+
+            Animation animation = new Animation() {
+                @Override
+                protected void applyTransformation(float interpolatedTime, Transformation t) {
+                    onAnimationUpdate(interpolatedTime);
+                }
+            };
+            animation.setDuration(200);
+            animation.setInterpolator(new BounceInterpolator());
+            animation.setAnimationListener(this);
+            ChromeLikeLayout.this.clearAnimation();
+            ChromeLikeLayout.this.startAnimation(animation);
         }
 
         public boolean isAnimationStarted() {
@@ -457,6 +433,22 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
 
         public void updateFromX(float currentX) {
             mAnimFromX = currentX;
+        }
+
+        @Override
+        public void onAnimationStart(Animation animation) {
+            mAnimationStarted = true;
+        }
+
+        @Override
+        public void onAnimationEnd(Animation animation) {
+            mAnimationStarted = false;
+            mPrevX = mAnimFromX;
+        }
+
+        @Override
+        public void onAnimationRepeat(Animation animation) {
+
         }
     }
 
