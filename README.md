@@ -5,6 +5,9 @@ Pull down, and execute more action!
 ![Logo](https://raw.githubusercontent.com/ashqal/ChromeLikeSwipeLayout/master/screenshot/screenshot.png)
 </br>
 
+## Demo Video
+View the [demo video](https://youtu.be/z0FjPeJEx7o) on Youtube.
+
 ## Usage
 ```java
 <com.asha.ChromeLikeSwipeLayout
