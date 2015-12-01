@@ -1,7 +1,6 @@
 package com.asha.chromelikeswipelayout;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
 import com.asha.ChromeLikeSwipeLayout;
@@ -12,7 +11,7 @@ import static com.asha.ChromeLikeSwipeLayout.dp2px;
  * Created by hzqiujiadi on 15/12/01.
  * hzqiujiadi ashqalcn@gmail.com
  */
-public class ScrollViewActivity extends AppCompatActivity {
+public class ScrollViewActivity extends SubActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

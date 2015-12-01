@@ -1,7 +1,6 @@
 package com.asha.chromelikeswipelayout;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,11 +10,13 @@ import android.widget.Toast;
 
 import com.asha.ChromeLikeSwipeLayout;
 
+import static com.asha.ChromeLikeSwipeLayout.dp2px;
+
 /**
  * Created by hzqiujiadi on 15/11/27.
  * hzqiujiadi ashqalcn@gmail.com
  */
-public class RecyclerViewActivity extends AppCompatActivity {
+public class RecyclerViewActivity extends SubActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -25,7 +26,10 @@ public class RecyclerViewActivity extends AppCompatActivity {
         ChromeLikeSwipeLayout.makeConfig()
                 .addIcon(R.drawable.selector_icon_add)
                 .addIcon(R.drawable.selector_icon_refresh)
+                .addIcon(R.drawable.selector_icon_refresh)
                 .addIcon(R.drawable.selector_icon_close)
+                .radius(dp2px(35))
+                .gap(dp2px(5))
                 .circleColor(0xFF11CCFF)
                 .listenItemSelected(new ChromeLikeSwipeLayout.IOnItemSelectedListener() {
                     @Override
@@ -37,7 +41,7 @@ public class RecyclerViewActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        recyclerView.setAdapter(new ADPT());
+        recyclerView.setAdapter(new Adapter());
     }
 
     private class VH extends RecyclerView.ViewHolder{
@@ -46,7 +50,7 @@ public class RecyclerViewActivity extends AppCompatActivity {
             super(itemView);
         }
     }
-    private class ADPT extends RecyclerView.Adapter<VH> {
+    private class Adapter extends RecyclerView.Adapter<VH> {
 
         @Override
         public VH onCreateViewHolder(ViewGroup parent, int viewType) {

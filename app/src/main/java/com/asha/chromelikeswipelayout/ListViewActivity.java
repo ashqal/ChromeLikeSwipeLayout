@@ -1,7 +1,6 @@
 package com.asha.chromelikeswipelayout;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +14,7 @@ import com.asha.ChromeLikeSwipeLayout;
  * Created by hzqiujiadi on 15/11/27.
  * hzqiujiadi ashqalcn@gmail.com
  */
-public class ListViewActivity extends AppCompatActivity {
+public class ListViewActivity extends SubActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,10 +35,10 @@ public class ListViewActivity extends AppCompatActivity {
                 .setTo(chromeLikeSwipeLayout);
 
         ListView listView = (ListView) findViewById(R.id.listView);
-        listView.setAdapter(new ADPT());
+        listView.setAdapter(new Adapter());
     }
 
-    private class ADPT extends BaseAdapter {
+    private class Adapter extends BaseAdapter {
         @Override
         public int getCount() {
             return 40;
