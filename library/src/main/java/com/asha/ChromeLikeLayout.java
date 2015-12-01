@@ -162,9 +162,15 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     public void onActionUpOrCancel(boolean isExpanded){
         if ( !mIsFirstExpanded ) return;
         mIsFirstExpanded = false;
+        boolean isRippleAnimEnabled = getChildCount() > 0;
         if ( isExpanded ){
-            if ( mRippleAnimatorHelper.isAnimationStarted() ) return;
-            mRippleAnimatorHelper.launchAnim(mRadius,getMeasuredWidth());
+            if ( isRippleAnimEnabled ){
+                if ( mRippleAnimatorHelper.isAnimationStarted() ) return;
+                mRippleAnimatorHelper.launchAnim(mRadius,getMeasuredWidth());
+            } else {
+                if ( mRippleListener != null ) mRippleListener.onRippleAnimFinished(-1);
+            }
+
         }
     }
 
@@ -344,11 +350,6 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         }
 
         public void launchAnim(float fromRadius, float toRadius) {
-
-            if ( ChromeLikeLayout.this.getChildCount() == 0 ){
-                onAnimationEnd(null);
-                return;
-            }
 
             mAnimFromRadius = fromRadius;
             mAnimToRadius = toRadius;

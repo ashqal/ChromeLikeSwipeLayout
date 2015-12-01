@@ -155,9 +155,8 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 mChromeLikeLayout.onActionUpOrCancel(isExpanded);
                 break;
             case MotionEvent.ACTION_UP:
-                mChromeLikeLayout.onActionUpOrCancel(isExpanded);
                 executeAction();
-
+                mChromeLikeLayout.onActionUpOrCancel(isExpanded);
                 break;
             case MotionEvent.ACTION_MOVE:
                 mChromeLikeLayout.onActionMove(event,isExpanded);
@@ -318,9 +317,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     private boolean canChildDragDown()
     {
         ensureTarget();
-        boolean result = ViewCompat.canScrollVertically(mTarget,-1) ;
-        //Log.e(TAG,"canChildDragDown:" + result + ",scrollY:" + mTarget.getScrollY() );
-        return result ;
+        return ViewCompat.canScrollVertically(mTarget,-1);
     }
 
     private void ensureTarget() {
@@ -339,7 +336,8 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     }
 
     private void setConfig(Config config){
-        mChromeLikeLayout.setIcons(config.mIcons);
+        if ( config.mIcons != null )
+            mChromeLikeLayout.setIcons(config.mIcons);
         if ( config.mBackgroundResId != Config.DEFAULT )
             mChromeLikeLayout.setBackgroundResource(config.mBackgroundResId);
         if ( config.mBackgroundColor != Config.DEFAULT )
