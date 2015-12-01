@@ -72,11 +72,10 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             @Override
             public void onRippleAnimFinished(int index) {
                 mIsBusy = false;
-                launchResetAnim(false);
+                launchResetAnimAfterRipple();
                 mBeginDragging = false;
-                if ( mOnItemSelectedListener != null ){
+                if ( mOnItemSelectedListener != null )
                     mOnItemSelectedListener.onItemSelected(index);
-                }
             }
         });
         addOnExpandViewListener(mChromeLikeLayout);
@@ -209,12 +208,20 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             mIsBusy = true;
         } else {
             if ( mIsBusy ) return;
-            launchResetAnim(true);
+            launchResetAnimFromCancel();
             mBeginDragging = false;
         }
     }
 
-    private void launchResetAnim(final boolean isFromCancel ){
+    private void launchResetAnimAfterRipple(){
+        launchResetAnim(false);
+    }
+
+    private void launchResetAnimFromCancel(){
+        launchResetAnim(true);
+    }
+
+    private void launchResetAnim( final boolean isFromCancel ){
         ensureTarget();
 
         final int from = mTarget.getTop();
@@ -296,7 +303,6 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         // Nope.
         //super.requestDisallowInterceptTouchEvent(b);
     }
-
 
     private boolean canChildDragDown()
     {

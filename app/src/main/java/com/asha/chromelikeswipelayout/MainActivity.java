@@ -11,22 +11,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity);
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    }
-
-    public void TestA(View view) {
-        Intent i = new Intent(this,AMainActivity.class);
-        startActivity(i);
-    }
-
-    public void TestB(View view) {
-        Intent i = new Intent(this,BMainActivity.class);
-        startActivity(i);
     }
 
     public void OnListViewClicked(View view) {
         Intent i = new Intent(this,ListViewActivity.class);
+        startActivity(i);
+    }
+
+    public void OnScrollViewClicked(View view) {
+        Intent i = new Intent(this,ScrollViewActivity.class);
+        startActivity(i);
+    }
+
+    public void OnLinearLayoutClicked(View view) {
+        Intent i = new Intent(this,LinearLayoutActivity.class);
         startActivity(i);
     }
 }

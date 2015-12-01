@@ -5,35 +5,32 @@
     android:layout_height="match_parent"
     tools:context="com.asha.chromelikeswipelayout.MainActivity">
     <com.asha.ChromeLikeSwipeLayout
+        android:id="@+id/chrome_like_swipe_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#ffeda9"
-        >
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:id="@+id/linear_layout"
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:background="#DDDDDD">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:background="#ffceaaaa"
                 android:gravity="center"
-                android:text="I am in ScrollView" />
+                android:text="I am in LinearLayout" />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:background="#ffceaaaa"
                 android:gravity="center"
-                android:text="I am in ScrollView" />
+                android:text="I am in LinearLayout" />
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:background="#ffceaaaa"
                 android:gravity="center"
-                android:text="I am in ScrollView" />
+                android:text="I am in LinearLayout" />
         </LinearLayout>
     </com.asha.ChromeLikeSwipeLayout>
 </RelativeLayout>

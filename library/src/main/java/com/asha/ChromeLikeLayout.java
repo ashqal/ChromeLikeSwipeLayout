@@ -43,7 +43,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     private float mTranslate;
     private int mCurrentFlag;
     private int mRadius = dp2px(40);
-    private int mGap = dp2px(0);
+    private int mGap = dp2px(15);
     private IOnRippleListener mRippleListener;
     private GummyAnimatorHelper mGummyAnimatorHelper = new GummyAnimatorHelper();
     private RippleAnimatorHelper mRippleAnimatorHelper = new RippleAnimatorHelper();
@@ -104,6 +104,9 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     }
 
     private void init() {
+
+        setBackgroundColor(0xFF333333);
+
         mPaint = new Paint();
         mPaint.setColor(0xFFFFCC11);
         mPaint.setStyle(Paint.Style.FILL);
@@ -140,7 +143,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
 
         if ( !isExpanded ) return;
 
-        if (getChildCount() == 0) return;
+        if ( !isBesselEnable() ) return;
 
         float currentX = event.getX();
         if ( mGummyAnimatorHelper.isAnimationStarted() ){
@@ -175,6 +178,10 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         updateAlpha(1);
         updateCurrentFlag((getChildCount() - 1) >> 1);
         mTranslate = flag2TargetTranslate();
+    }
+
+    private boolean isBesselEnable(){
+        return getChildCount() > 1;
     }
 
     private void updateAlpha( float alpha ){
@@ -262,17 +269,14 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
 
     @Override
     protected void onDraw(Canvas canvas) {
-
         if ( getChildCount() == 0 ) return;
         int centerY = getMeasuredHeight() >> 1;
 
-        canvas.drawColor(0xFF333333);
         canvas.save();
         canvas.translate(mTranslate, centerY);
         canvas.rotate(mDegrees);
         canvas.drawPath(mPath, mPaint);
         canvas.restore();
-
     }
 
     private static float distance(float x1,float y1, float x2, float y2){

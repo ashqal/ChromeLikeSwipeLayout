@@ -6,13 +6,13 @@
     android:orientation="vertical"
     tools:context="com.asha.chromelikeswipelayout.MainActivity">
     <Button
-        android:text="A"
-        android:onClick="TestA"
+        android:text="ScrollView"
+        android:onClick="OnScrollViewClicked"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
     <Button
-        android:text="B"
-        android:onClick="TestB"
+        android:text="LinearLayout"
+        android:onClick="OnLinearLayoutClicked"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

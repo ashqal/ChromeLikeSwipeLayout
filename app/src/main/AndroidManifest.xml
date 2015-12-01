@@ -15,8 +15,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AMainActivity"/>
-        <activity android:name=".BMainActivity"/>
+        <activity android:name=".ScrollViewActivity"/>
+        <activity android:name=".LinearLayoutActivity"/>
         <activity android:name=".ListViewActivity"/>
     </application>
 
