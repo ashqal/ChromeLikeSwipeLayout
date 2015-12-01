@@ -1,11 +1,9 @@
 package com.asha;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.os.Build;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
@@ -30,6 +28,7 @@ import static com.asha.ChromeLikeSwipeLayout.dp2px;
 public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener {
     private static final String TAG = "ChromeLikeView";
     private static final float sMagicNumber = 0.55228475f;
+    private static final int sDefaultCircleColor = 0xFFFFCC11;
     private Paint mPaint;
     private Path mPath;
     private float mPrevX;
@@ -43,25 +42,16 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     private GummyAnimatorHelper mGummyAnimatorHelper = new GummyAnimatorHelper();
     private RippleAnimatorHelper mRippleAnimatorHelper = new RippleAnimatorHelper();
 
-
     public ChromeLikeLayout(Context context) {
-        super(context);
-        init();
+        this(context,null);
     }
 
     public ChromeLikeLayout(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
+        this(context, attrs,0);
     }
 
     public ChromeLikeLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public ChromeLikeLayout(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
         init();
     }
 
@@ -103,7 +93,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         setBackgroundColor(0xFF333333);
 
         mPaint = new Paint();
-        mPaint.setColor(0xFFFFCC11);
+        mPaint.setColor(sDefaultCircleColor);
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setAntiAlias(true);
 
@@ -138,7 +128,11 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
 
         if ( !isExpanded ) return;
 
-        if ( !isBesselEnable() ) return;
+        if ( !isBesselEnable() ){
+            updateAlpha(1);
+            updatePath( mPrevX, mPrevX, mRadius, false );
+            return;
+        }
 
         float currentX = event.getX();
         if ( mGummyAnimatorHelper.isAnimationStarted() ){

@@ -3,9 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context="com.asha.chromelikeswipelayout.MainActivity">
     <com.asha.ChromeLikeSwipeLayout
         android:id="@+id/chrome_like_swipe_layout"
+        app:circleColor="#89d999"
+        app:gap="0dp"
+        app:radius="45dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 

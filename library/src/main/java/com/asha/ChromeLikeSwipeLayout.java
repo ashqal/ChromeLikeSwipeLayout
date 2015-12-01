@@ -1,9 +1,8 @@
 package com.asha;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Resources;
-import android.os.Build;
+import android.content.res.TypedArray;
 import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.v4.view.ViewCompat;
@@ -17,6 +16,8 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Transformation;
 import android.widget.AbsListView;
 import android.widget.ScrollView;
+
+import com.asha.library.R;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -49,27 +50,33 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     private IOnItemSelectedListener mOnItemSelectedListener;
     private LinkedList<IOnExpandViewListener> mExpandListeners = new LinkedList<>();
 
-
-
     public ChromeLikeSwipeLayout(Context context) {
-        super(context);
-        init();
+        this(context, null);
     }
 
     public ChromeLikeSwipeLayout(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
+        this(context, attrs, 0);
     }
 
     public ChromeLikeSwipeLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
-    }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public ChromeLikeSwipeLayout(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init();
+        Config config = makeConfig();
+        TypedArray ta = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ChromeLikeSwipeLayout,defStyleAttr,0);
+        if ( ta != null ){
+            if (ta.hasValue(R.styleable.ChromeLikeSwipeLayout_circleColor)){
+                config.circleColor(ta.getColor(R.styleable.ChromeLikeSwipeLayout_circleColor,Config.DEFAULT));
+            }
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_gap)){
+                config.gap(ta.getDimensionPixelOffset(R.styleable.ChromeLikeSwipeLayout_gap,Config.DEFAULT));
+            }
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_radius)){
+                config.radius(ta.getDimensionPixelOffset(R.styleable.ChromeLikeSwipeLayout_radius,Config.DEFAULT));
+            }
+            ta.recycle();
+        }
+        config.setTo(this);
     }
 
     private void init() {

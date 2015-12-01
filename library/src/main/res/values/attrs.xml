@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ChromeLikeSwipeLayout">
+        <attr name="radius" format="dimension" />
+        <attr name="gap" format="dimension" />
+        <attr name="circleColor" format="color" />
+    </declare-styleable>
+</resources>

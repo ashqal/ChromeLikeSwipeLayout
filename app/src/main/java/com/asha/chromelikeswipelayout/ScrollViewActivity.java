@@ -23,9 +23,8 @@ public class ScrollViewActivity extends SubActivity {
                 .addIcon(R.drawable.selector_icon_add)
                 .addIcon(R.drawable.selector_icon_close)
                 .backgroundColor(0xFF111111)
-                .circleColor(0xFFCC11FF)
                 .gap(dp2px(100))
-                .radius(dp2px(30))
+                .radius(dp2px(38))
                 .listenItemSelected(new ChromeLikeSwipeLayout.IOnItemSelectedListener() {
                     @Override
                     public void onItemSelected(int index) {
