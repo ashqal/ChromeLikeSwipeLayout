@@ -128,12 +128,6 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
 
         if ( !isExpanded ) return;
 
-        if ( !isBesselEnable() ){
-            updateAlpha(1);
-            updatePath( mPrevX, mPrevX, mRadius, false );
-            return;
-        }
-
         float currentX = event.getX();
         if ( mGummyAnimatorHelper.isAnimationStarted() ){
             mGummyAnimatorHelper.updateFromX(currentX);
@@ -148,6 +142,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             mPrevX = currentX;
         }
         updatePath( currentX, mPrevX, mRadius, false );
+
         if ( Math.abs( currentX - mPrevX ) > getItemWidth() * 0.5 ){
             if ( currentX > mPrevX ) updateCurrentFlag(nextOfCurrentFlag());
             else updateCurrentFlag(prevOfCurrentFlag());
@@ -178,10 +173,6 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         updateAlpha(1);
         updateCurrentFlag((getChildCount() - 1) >> 1);
         mTranslate = flag2TargetTranslate();
-    }
-
-    private boolean isBesselEnable(){
-        return getChildCount() > 1;
     }
 
     private void updateAlpha( float alpha ){
@@ -405,7 +396,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         }
 
         public void launchAnim(float fromX, float toX, float fromTranslate, float toTranslate) {
-
+            mAnimationStarted = true;
             mAnimFromX = fromX;
             mAnimToX = toX;
             mAnimFromTranslate = fromTranslate;
@@ -434,7 +425,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
 
         @Override
         public void onAnimationStart(Animation animation) {
-            mAnimationStarted = true;
+
         }
 
         @Override
