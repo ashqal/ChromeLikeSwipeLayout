@@ -141,6 +141,12 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         }
 
         updateAlpha(1);
+        if ( mCurrentFlag == nextOfCurrentFlag() && currentX > mPrevX ){
+            mPrevX = currentX;
+        }
+        if ( mCurrentFlag == prevOfCurrentFlag() && currentX < mPrevX ){
+            mPrevX = currentX;
+        }
         updatePath( currentX, mPrevX, mRadius, false );
         if ( Math.abs( currentX - mPrevX ) > getItemWidth() * 0.5 ){
             if ( currentX > mPrevX ) updateCurrentFlag(nextOfCurrentFlag());
@@ -164,7 +170,6 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             } else {
                 if ( mRippleListener != null ) mRippleListener.onRippleAnimFinished(-1);
             }
-
         }
     }
 
@@ -251,16 +256,13 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     private int nextOfCurrentFlag(){
         int tmp = mCurrentFlag;
         tmp++;
-        tmp %= getChildCount();
-        return tmp;
+        return Math.min(tmp,getChildCount()-1);
     }
 
     private int prevOfCurrentFlag(){
         int tmp = mCurrentFlag;
         tmp--;
-        tmp += getChildCount();
-        tmp %= getChildCount();
-        return tmp;
+        return Math.max(tmp,0);
     }
 
     @Override

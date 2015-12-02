@@ -302,11 +302,9 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             return;
         }
         final int width = getMeasuredWidth() - getPaddingLeft() - getPaddingRight();
-        mTarget.measure(MeasureSpec.makeMeasureSpec(
-                width,
-                MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(
-                getMeasuredHeight() - getPaddingTop() - getPaddingBottom(), MeasureSpec.EXACTLY));
-
+        final int height = getMeasuredHeight() - getPaddingTop() - getPaddingBottom();
+        mTarget.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
         mChromeLikeLayout.measure(MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
                 MeasureSpec.makeMeasureSpec(mTarget.getTop(), MeasureSpec.EXACTLY));
     }
