@@ -126,7 +126,10 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             return;
         }
 
-        if ( !isExpanded ) return;
+        if ( !isExpanded ){
+            mIsFirstExpanded = false;
+            return;
+        }
 
         float currentX = event.getX();
         if ( mGummyAnimatorHelper.isAnimationStarted() ){
@@ -156,6 +159,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
 
     public void onActionUpOrCancel(boolean isExpanded){
         if ( !mIsFirstExpanded ) return;
+        if ( getChildCount() == 0 ) return;
         mIsFirstExpanded = false;
         boolean isRippleAnimEnabled = getChildCount() > 0;
         if ( isExpanded ){
@@ -349,9 +353,12 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             animation.setDuration(300);
             animation.setInterpolator(new FastOutSlowInInterpolator());
             animation.setAnimationListener(this);
+
             View target = ChromeLikeLayout.this.getChildAt(mCurrentFlag);
+            if ( target == null ) return;
             target.clearAnimation();
             target.startAnimation(animation);
+            mAnimationStarted = true;
         }
 
         public boolean isAnimationStarted() {
@@ -360,7 +367,6 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
 
         @Override
         public void onAnimationStart(Animation animation) {
-            mAnimationStarted = true;
             mEventDispatched = false;
         }
 
@@ -396,7 +402,6 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         }
 
         public void launchAnim(float fromX, float toX, float fromTranslate, float toTranslate) {
-            mAnimationStarted = true;
             mAnimFromX = fromX;
             mAnimToX = toX;
             mAnimFromTranslate = fromTranslate;
@@ -413,6 +418,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             animation.setAnimationListener(this);
             ChromeLikeLayout.this.clearAnimation();
             ChromeLikeLayout.this.startAnimation(animation);
+            mAnimationStarted = true;
         }
 
         public boolean isAnimationStarted() {
