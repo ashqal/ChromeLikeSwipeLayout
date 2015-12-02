@@ -142,9 +142,6 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 //Log.d(TAG, String.format("onInterceptTouchEvent ACTION_POINTER_UP"));
                 break;
         }
-        //mBeginDragging = true;
-        //Log.d(TAG, String.format("onInterceptTouchEvent return %b", mBeginDragging));
-
         return mBeginDragging;
     }
 
@@ -176,7 +173,6 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                         notifyOnExpandListeners( currentTop * 1.0f / sThreshold, true);
                     childOffsetTopAndBottom(currentTop,mTopOffset);
                 }
-                invalidate();
                 //requestLayout();
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
