@@ -9,6 +9,7 @@ import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.BounceInterpolator;
@@ -31,7 +32,6 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     private static final int sDefaultCircleColor = 0xFFFFCC11;
     private Paint mPaint;
     private Path mPath;
-    private float mPrevX;
     private float mDegrees;
     private boolean mIsFirstExpanded;
     private float mTranslate;
@@ -41,6 +41,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     private IOnRippleListener mRippleListener;
     private GummyAnimatorHelper mGummyAnimatorHelper = new GummyAnimatorHelper();
     private RippleAnimatorHelper mRippleAnimatorHelper = new RippleAnimatorHelper();
+    private TouchHelper mTouchHelper;
 
     public ChromeLikeLayout(Context context) {
         this(context,null);
@@ -89,6 +90,8 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     }
 
     private void init() {
+        final ViewConfiguration configuration = ViewConfiguration.get(getContext());
+        mTouchHelper = new TouchHelper(configuration.getScaledTouchSlop());
 
         setBackgroundColor(0xFF333333);
 
@@ -122,37 +125,47 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     public void onActionMove(MotionEvent event, boolean isExpanded){
         if ( !mIsFirstExpanded && isExpanded ){
             mIsFirstExpanded = true;
-            mPrevX = event.getX();
+            mTouchHelper.feed(event);
+            //mPrevX = event.getX();
             return;
         }
 
         if ( !isExpanded ){
             mIsFirstExpanded = false;
+            mTouchHelper.reset();
             return;
         }
 
-        float currentX = event.getX();
+        mTouchHelper.feed(event);
+        if ( !mTouchHelper.isMoving() ){
+            updateAlpha(1);
+            updatePath( 0, 0, mRadius, false );
+            updateIconScale(1);
+            return;
+        }
+
         if ( mGummyAnimatorHelper.isAnimationStarted() ){
-            mGummyAnimatorHelper.updateFromX(currentX);
+            mGummyAnimatorHelper.updateFromX(mTouchHelper.getCurrentX());
             return;
         }
+        if ( mCurrentFlag == prevOfCurrentFlag() )
+            mTouchHelper.testLeftEdge();
+        if ( mCurrentFlag == nextOfCurrentFlag() )
+            mTouchHelper.testRightEdge();
 
-        if ( mCurrentFlag == nextOfCurrentFlag() && currentX > mPrevX ){
-            mPrevX = currentX;
-        }
-        if ( mCurrentFlag == prevOfCurrentFlag() && currentX < mPrevX ){
-            mPrevX = currentX;
-        }
+        float currentX = mTouchHelper.getCurrentX();
+        float prevX = mTouchHelper.getPrevX();
+
         updateAlpha(1);
-        updatePath( currentX, mPrevX, mRadius, false );
+        updatePath( currentX, prevX, mRadius, false );
         updateIconScale(1);
 
-        if ( Math.abs( currentX - mPrevX ) > getItemWidth() * 0.5 ){
-            if ( currentX > mPrevX ) updateCurrentFlag(nextOfCurrentFlag());
+        if ( Math.abs( currentX -  prevX ) > getItemWidth() * 0.5 ){
+            if ( currentX > prevX ) updateCurrentFlag(nextOfCurrentFlag());
             else updateCurrentFlag(prevOfCurrentFlag());
             mGummyAnimatorHelper.launchAnim(
                     currentX
-                    , mPrevX
+                    , prevX
                     , mTranslate
                     , flag2TargetTranslate() );
         }
@@ -162,6 +175,8 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         if ( !mIsFirstExpanded ) return;
         if ( getChildCount() == 0 ) return;
         mIsFirstExpanded = false;
+        mTouchHelper.reset();
+
         if ( isExpanded ){
             boolean isRippleAnimEnabled = getChildCount() > 0;
             if ( isRippleAnimEnabled ){
@@ -327,6 +342,75 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         void onRippleAnimFinished(int index);
     }
 
+    public static class TouchHelper {
+        private final int mTouchSlop;
+        private int mStatus;
+        private final int STATUS_NONE   = 0;
+        private final int STATUS_READY  = 1;
+        private final int STATUS_MOVING = 2;
+        private float mReadyPrevX;
+        private float mMovingPrevX;
+        private float mMovingCurrentX;
+
+        public TouchHelper(int mTouchSlop) {
+            this.mTouchSlop = mTouchSlop;
+        }
+
+        public boolean isMoving(){
+            return mStatus == STATUS_MOVING;
+        }
+
+        public void feed(MotionEvent event){
+            int status = mStatus;
+            float tmpX = event.getX();
+            switch ( status ){
+                case STATUS_NONE:
+                    mReadyPrevX = tmpX;
+                    mStatus = STATUS_READY;
+                    break;
+                case STATUS_READY:
+                    if ( Math.abs(tmpX - mReadyPrevX) > mTouchSlop ){
+                        mMovingPrevX = tmpX;
+                        mMovingCurrentX = tmpX;
+                        mStatus = STATUS_MOVING;
+                    }
+                    break;
+                case STATUS_MOVING:
+                    mMovingCurrentX = tmpX;
+                    break;
+            }
+        }
+
+        public float getPrevX(){
+            return mMovingPrevX;
+        }
+
+        public float getCurrentX(){
+            return mMovingCurrentX;
+        }
+
+        public void resetToReady(float mAnimFromX){
+            mStatus = STATUS_READY;
+            mReadyPrevX = mAnimFromX;
+        }
+
+        public void reset(){
+            mStatus = STATUS_NONE;
+            mReadyPrevX = 0;
+            mMovingPrevX = 0;
+        }
+
+        public void testLeftEdge() {
+            if ( mMovingCurrentX < mMovingPrevX )
+                mMovingPrevX = mMovingCurrentX;
+        }
+
+        public void testRightEdge() {
+            if ( mMovingCurrentX > mMovingPrevX )
+                mMovingPrevX = mMovingCurrentX;
+        }
+    }
+
     public class RippleAnimatorHelper implements Animation.AnimationListener {
 
         private float mAnimFromRadius;
@@ -437,7 +521,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         @Override
         public void onAnimationEnd(Animation animation) {
             mAnimationStarted = false;
-            mPrevX = mAnimFromX;
+            mTouchHelper.resetToReady(mAnimFromX);
         }
 
         @Override
