@@ -1,12 +1,12 @@
 package com.asha.chromelikeswipelayout;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.asha.ChromeLikeSwipeLayout;
 
@@ -15,6 +15,8 @@ import com.asha.ChromeLikeSwipeLayout;
  * hzqiujiadi ashqalcn@gmail.com
  */
 public class ListViewActivity extends SubActivity {
+    private static final String TAG = "ListViewActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,7 +31,8 @@ public class ListViewActivity extends SubActivity {
                 .listenItemSelected(new ChromeLikeSwipeLayout.IOnItemSelectedListener() {
                     @Override
                     public void onItemSelected(int index) {
-                        Toast.makeText(ListViewActivity.this, "onItemSelected:" + index, Toast.LENGTH_SHORT).show();
+                        Log.e(TAG,"onItemSelected:" + index);
+                        //Toast.makeText(ListViewActivity.this, "onItemSelected:" + index, Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setTo(chromeLikeSwipeLayout);

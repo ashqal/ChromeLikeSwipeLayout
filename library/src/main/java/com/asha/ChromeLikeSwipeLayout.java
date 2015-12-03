@@ -88,7 +88,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             @Override
             public void onRippleAnimFinished(int index) {
                 mIsBusy = false;
-                launchResetAnimAfterRipple();
+                if ( !mAnimationStarted ) launchResetAnimAfterRipple();
                 mBeginDragging = false;
                 if ( mOnItemSelectedListener != null )
                     mOnItemSelectedListener.onItemSelected(index);
@@ -99,17 +99,16 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     }
 
     @Override
-    public boolean onInterceptTouchEvent(MotionEvent event)
-    {
-        float getY = event.getY();
+    public boolean onInterceptTouchEvent(MotionEvent event) {
         int action = event.getAction();
         if ( canChildDragDown() ) return false;
+        if ( mAnimationStarted ) return false;
 
+        float getY = event.getY();
         switch ( action & MotionEvent.ACTION_MASK  ) {
 
             case MotionEvent.ACTION_DOWN:
                 if ( mBeginDragging ){
-                    //Log.d(TAG, String.format("onInterceptTouchEvent ACTION_DOWN %d %d",mTopOffset,sThreshold));
                     float diff;
                     if ( mTopOffset < 0 ){
                         diff = 0;
@@ -148,9 +147,10 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
-        boolean isExpanded = mTopOffset >= sThreshold;
-        //first point
         float getY = event.getY();
+        mTopOffset = calculateTopOffset(getY - mTouchDownActor);
+        boolean isExpanded = mTopOffset >= sThreshold && mBeginDragging;
+        //first point
 
         switch ( event.getAction() ) {
             case MotionEvent.ACTION_DOWN:
@@ -159,12 +159,11 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 mChromeLikeLayout.onActionUpOrCancel(isExpanded);
                 break;
             case MotionEvent.ACTION_UP:
-                executeAction();
+                executeAction(isExpanded);
                 mChromeLikeLayout.onActionUpOrCancel(isExpanded);
                 break;
             case MotionEvent.ACTION_MOVE:
                 mChromeLikeLayout.onActionMove(event,isExpanded);
-                mTopOffset = calculateTopOffset(getY - mTouchDownActor);
                 ensureTarget();
                 View child = mTarget;
                 int currentTop = child.getTop();
@@ -213,12 +212,13 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         requestLayout();
     }
 
-    private void executeAction() {
+    private void executeAction(boolean isExpanded) {
 
-        if ( mTopOffset >= sThreshold ){
+        if ( isExpanded ){
             mIsBusy = true;
         } else {
             if ( mIsBusy ) return;
+            if ( mAnimationStarted ) return;
             launchResetAnimFromCancel();
             mBeginDragging = false;
         }
@@ -231,7 +231,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     private void launchResetAnimFromCancel(){
         launchResetAnim(true);
     }
-
+    private boolean mAnimationStarted;
     private void launchResetAnim( final boolean isFromCancel ){
         ensureTarget();
 
@@ -247,8 +247,24 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         };
         animation.setDuration(300);
         animation.setInterpolator(new DecelerateInterpolator());
-        mTarget.clearAnimation();
-        mTarget.startAnimation(animation);
+        animation.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                mAnimationStarted = false;
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
+        this.clearAnimation();
+        this.startAnimation(animation);
+        mAnimationStarted = true;
     }
 
     @Override
