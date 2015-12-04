@@ -33,7 +33,6 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     private Paint mPaint;
     private Path mPath;
     private float mDegrees;
-    private boolean mIsFirstExpanded;
     private float mTranslate;
     private int mCurrentFlag;
     private int mRadius = dp2px(40);
@@ -123,15 +122,12 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     }
 
     public void onActionMove(MotionEvent event, boolean isExpanded){
-        if ( !mIsFirstExpanded && isExpanded ){
-            mIsFirstExpanded = true;
+        if ( !mTouchHelper.isExpanded() && isExpanded ){
             mTouchHelper.feed(event);
-            //mPrevX = event.getX();
             return;
         }
 
         if ( !isExpanded ){
-            mIsFirstExpanded = false;
             mTouchHelper.reset();
             return;
         }
@@ -172,9 +168,8 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     }
 
     public void onActionUpOrCancel(boolean isExpanded){
-        if ( !mIsFirstExpanded ) return;
         if ( getChildCount() == 0 ) return;
-        mIsFirstExpanded = false;
+        if ( !mTouchHelper.isExpanded() ) return;
         mTouchHelper.reset();
 
         if ( isExpanded ){
@@ -309,15 +304,15 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         updateIconScale(fraction);
     }
 
-    private static final float factorScaleCircle = 0.75f;
-    private static final float factorScaleIcon = 0.3f;
+    private static final float sFactorScaleCircle = 0.75f;
+    private static final float sFactorScaleIcon = 0.3f;
 
     private float circleOffsetFraction( float fraction ){
-        return offsetFraction(fraction,factorScaleCircle);
+        return offsetFraction(fraction, sFactorScaleCircle);
     }
 
     private float iconOffsetFraction( float fraction ){
-        return offsetFraction(fraction,factorScaleIcon);
+        return offsetFraction(fraction, sFactorScaleIcon);
     }
 
     private float offsetFraction(float fraction, float factor){
@@ -345,9 +340,10 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     public static class TouchHelper {
         private final int mTouchSlop;
         private int mStatus;
-        private final int STATUS_NONE   = 0;
-        private final int STATUS_READY  = 1;
-        private final int STATUS_MOVING = 2;
+        private final int STATUS_NONE       = 0;
+        private final int STATUS_EXPANDED   = 1;
+        private final int STATUS_READY      = 2;
+        private final int STATUS_MOVING     = 3;
         private float mReadyPrevX;
         private float mMovingPrevX;
         private float mMovingCurrentX;
@@ -359,12 +355,16 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         public boolean isMoving(){
             return mStatus == STATUS_MOVING;
         }
+        public boolean isExpanded(){
+            return mStatus > STATUS_NONE;
+        }
 
         public void feed(MotionEvent event){
             int status = mStatus;
             float tmpX = event.getX();
             switch ( status ){
                 case STATUS_NONE:
+                case STATUS_EXPANDED:
                     mReadyPrevX = tmpX;
                     mStatus = STATUS_READY;
                     break;
