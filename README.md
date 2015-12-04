@@ -15,6 +15,9 @@ View the [demo video](https://youtu.be/z0FjPeJEx7o) on Youtube.
     app:circleColor="#89d999"
     app:gap="0dp"
     app:radius="45dp"
+    app:collapseDuration="300"
+    app:rippleDuration="300"
+    app:gummyDuration="300"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <LinearLayout
@@ -37,6 +40,9 @@ ChromeLikeSwipeLayout.makeConfig()
         .radius(dp2px(35))
         .gap(dp2px(5))
         .circleColor(0xFF11CCFF)
+        .gummyDuration(1000)
+        .rippleDuration(1000)
+        .collapseDuration(1000)
         .listenItemSelected(new ChromeLikeSwipeLayout.IOnItemSelectedListener() {
             @Override
             public void onItemSelected(int index) {

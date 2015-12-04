@@ -494,7 +494,6 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         private float mAnimToTranslate;
         private boolean mAnimationStarted;
         private int mDuration = 300;
-        private Animation mAnimation;
 
         public void onAnimationUpdate(float interpolation) {
             Float currentX = FloatEvaluator.evaluate(interpolation,mAnimFromX,mAnimToX);
@@ -508,17 +507,17 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             mAnimFromTranslate = fromTranslate;
             mAnimToTranslate = toTranslate;
 
-            mAnimation = new Animation() {
+            Animation animation = new Animation() {
                 @Override
                 protected void applyTransformation(float interpolatedTime, Transformation t) {
                     onAnimationUpdate(interpolatedTime);
                 }
             };
-            mAnimation.setDuration(mDuration);
-            mAnimation.setInterpolator(new BounceInterpolator());
-            mAnimation.setAnimationListener(this);
+            animation.setDuration(mDuration);
+            animation.setInterpolator(new BounceInterpolator());
+            animation.setAnimationListener(this);
             ChromeLikeLayout.this.clearAnimation();
-            ChromeLikeLayout.this.startAnimation(mAnimation);
+            ChromeLikeLayout.this.startAnimation(animation);
             mAnimationStarted = true;
         }
 

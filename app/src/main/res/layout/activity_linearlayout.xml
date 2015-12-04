@@ -10,6 +10,9 @@
         app:circleColor="#89d999"
         app:gap="0dp"
         app:radius="45dp"
+        app:collapseDuration="300"
+        app:rippleDuration="300"
+        app:gummyDuration="300"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
