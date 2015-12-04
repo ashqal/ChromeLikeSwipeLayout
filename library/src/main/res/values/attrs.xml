@@ -4,5 +4,8 @@
         <attr name="radius" format="dimension" />
         <attr name="gap" format="dimension" />
         <attr name="circleColor" format="color" />
+        <attr name="collapseDuration" format="integer" />
+        <attr name="rippleDuration" format="integer" />
+        <attr name="gummyDuration" format="integer" />
     </declare-styleable>
 </resources>

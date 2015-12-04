@@ -45,6 +45,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     private boolean mBeginDragging;
     private int mTopOffset;
     private int mTouchSlop;
+    private int mCollapseDuration = 300;
     private float mTouchDownActor;
     private boolean mIsBusy;
     private IOnItemSelectedListener mOnItemSelectedListener;
@@ -73,6 +74,15 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             }
             if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_radius)){
                 config.radius(ta.getDimensionPixelOffset(R.styleable.ChromeLikeSwipeLayout_radius,Config.DEFAULT));
+            }
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_collapseDuration)){
+                config.collapseDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_collapseDuration,Config.DEFAULT));
+            }
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_rippleDuration)){
+                config.rippleDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_rippleDuration,Config.DEFAULT));
+            }
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_gummyDuration)){
+                config.gummyDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_gummyDuration,Config.DEFAULT));
             }
             ta.recycle();
         }
@@ -245,7 +255,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 childOffsetTopAndBottom( mTarget.getTop(), Math.round(step) );
             }
         };
-        animation.setDuration(300);
+        animation.setDuration(mCollapseDuration);
         animation.setInterpolator(new DecelerateInterpolator());
         animation.setAnimationListener(new Animation.AnimationListener() {
             @Override
@@ -352,6 +362,10 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         }
     }
 
+    private void setCollapseDuration(int collapseDuration) {
+        this.mCollapseDuration = collapseDuration;
+    }
+
     private void setConfig(Config config){
         if ( config.mIcons != null )
             mChromeLikeLayout.setIcons(config.mIcons);
@@ -365,6 +379,13 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             mChromeLikeLayout.setRadius(config.mRadius);
         if ( config.mRadius != Config.DEFAULT )
             mChromeLikeLayout.setGap(config.mGap);
+        if ( config.mRippleDuration != Config.DEFAULT )
+            mChromeLikeLayout.setRippleDuration(config.mRippleDuration);
+        if ( config.mGummyDuration != Config.DEFAULT )
+            mChromeLikeLayout.setGummyDuration(config.mGummyDuration);
+        if ( config.mCollapseDuration != Config.DEFAULT )
+            setCollapseDuration(config.mCollapseDuration);
+
         mOnItemSelectedListener = config.mOnItemSelectedListener;
     }
 
@@ -402,6 +423,9 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         private int mBackgroundColor = DEFAULT;
         private int mRadius = DEFAULT;
         private int mGap = DEFAULT;
+        private int mCollapseDuration = DEFAULT;
+        private int mRippleDuration = DEFAULT;
+        private int mGummyDuration = DEFAULT;
         private static final int DEFAULT = -1;
 
         private Config(){
@@ -441,6 +465,21 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
 
         public Config gap(int gap){
             this.mGap = gap;
+            return this;
+        }
+
+        public Config collapseDuration(int duration){
+            this.mCollapseDuration = duration;
+            return this;
+        }
+
+        public Config rippleDuration(int duration){
+            this.mRippleDuration = duration;
+            return this;
+        }
+
+        public Config gummyDuration(int duration){
+            this.mGummyDuration = duration;
             return this;
         }
 

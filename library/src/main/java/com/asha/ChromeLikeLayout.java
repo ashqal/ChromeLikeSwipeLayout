@@ -113,6 +113,14 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         }
     }
 
+    public void setRippleDuration(int duration){
+        mRippleAnimatorHelper.setDuration(duration);
+    }
+
+    public void setGummyDuration(int duration){
+        mGummyAnimatorHelper.setDuration(duration);
+    }
+
     public void setRadius(int radius) {
         this.mRadius = radius;
     }
@@ -176,6 +184,9 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             boolean isRippleAnimEnabled = getChildCount() > 0;
             if ( isRippleAnimEnabled ){
                 if ( mRippleAnimatorHelper.isAnimationStarted() ) return;
+                if ( mGummyAnimatorHelper.isAnimationStarted() ){
+                    mGummyAnimatorHelper.end();
+                }
                 mRippleAnimatorHelper.launchAnim(mRadius,getMeasuredWidth());
             } else {
                 if ( mRippleListener != null ) mRippleListener.onRippleAnimFinished(-1);
@@ -417,7 +428,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         private float mAnimToRadius;
         private boolean mAnimationStarted;
         private boolean mEventDispatched;
-
+        private int mDuration = 300;
 
         public void onAnimationUpdate(float interpolation) {
             int currentRadius = FloatEvaluator.evaluate(interpolation,mAnimFromRadius,mAnimToRadius).intValue();
@@ -435,7 +446,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
                     onAnimationUpdate(interpolatedTime);
                 }
             };
-            animation.setDuration(300);
+            animation.setDuration(mDuration);
             animation.setInterpolator(new FastOutSlowInInterpolator());
             animation.setAnimationListener(this);
 
@@ -468,6 +479,10 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         public void onAnimationRepeat(Animation animation) {
 
         }
+
+        public void setDuration(int duration) {
+            this.mDuration = duration;
+        }
     }
 
 
@@ -478,7 +493,8 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         private float mAnimFromTranslate;
         private float mAnimToTranslate;
         private boolean mAnimationStarted;
-
+        private int mDuration = 300;
+        private Animation mAnimation;
 
         public void onAnimationUpdate(float interpolation) {
             Float currentX = FloatEvaluator.evaluate(interpolation,mAnimFromX,mAnimToX);
@@ -492,17 +508,17 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             mAnimFromTranslate = fromTranslate;
             mAnimToTranslate = toTranslate;
 
-            Animation animation = new Animation() {
+            mAnimation = new Animation() {
                 @Override
                 protected void applyTransformation(float interpolatedTime, Transformation t) {
                     onAnimationUpdate(interpolatedTime);
                 }
             };
-            animation.setDuration(200);
-            animation.setInterpolator(new BounceInterpolator());
-            animation.setAnimationListener(this);
+            mAnimation.setDuration(mDuration);
+            mAnimation.setInterpolator(new BounceInterpolator());
+            mAnimation.setAnimationListener(this);
             ChromeLikeLayout.this.clearAnimation();
-            ChromeLikeLayout.this.startAnimation(animation);
+            ChromeLikeLayout.this.startAnimation(mAnimation);
             mAnimationStarted = true;
         }
 
@@ -527,6 +543,16 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         @Override
         public void onAnimationRepeat(Animation animation) {
 
+        }
+
+        public void setDuration(int duration) {
+            this.mDuration = duration;
+        }
+
+        public void end() {
+            ChromeLikeLayout.this.clearAnimation();
+            // anim to end immediately
+            onAnimationUpdate(1);
         }
     }
 
