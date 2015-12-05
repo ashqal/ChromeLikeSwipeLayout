@@ -31,6 +31,8 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     private static final String TAG = "ChromeLikeView";
     private static final float sMagicNumber = 0.55228475f;
     private static final int sDefaultCircleColor = 0xFFFFCC11;
+    private static final int sDefaultBackgroundColor = 0xFF333333;
+    private static final float sThreshold = 0.5f;
     private Paint mPaint;
     private Path mPath;
     private float mDegrees;
@@ -93,7 +95,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mTouchHelper = new TouchHelper(configuration.getScaledTouchSlop());
 
-        setBackgroundColor(0xFF333333);
+        setBackgroundColor(sDefaultBackgroundColor);
 
         mPaint = new Paint();
         mPaint.setColor(sDefaultCircleColor);
@@ -131,17 +133,24 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     }
 
     public void onActionMove(MotionEvent event, int pointerIndex, boolean isExpanded){
+        // feed MotionEvent after first expanded
         if ( !mTouchHelper.isExpanded() && isExpanded ){
             mTouchHelper.feed(event, pointerIndex);
             return;
         }
 
-        if ( !isExpanded ){
+        // reset the mTouchHelper if view is collapsed
+        if ( !isExpanded ) {
             mTouchHelper.reset();
             return;
         }
+        // now, the view must be expanded.
 
+        // feed the MotionEvent
+        // to update mTouchHelper status.
         mTouchHelper.feed(event, pointerIndex);
+
+        // if not in moving status
         if ( !mTouchHelper.isMoving() ){
             updateAlpha(1);
             updatePath( 0, 0, mRadius, false );
@@ -153,11 +162,15 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             mGummyAnimatorHelper.updateFromX(mTouchHelper.getCurrentX());
             return;
         }
+
+        // we can't move to left if the first circle is selected
+        // neither to right if the last circle is selected
         if ( mCurrentFlag == prevOfCurrentFlag() )
             mTouchHelper.testLeftEdge();
         if ( mCurrentFlag == nextOfCurrentFlag() )
             mTouchHelper.testRightEdge();
 
+        // now, the values can be trusted
         float currentX = mTouchHelper.getCurrentX();
         float prevX = mTouchHelper.getPrevX();
 
@@ -165,7 +178,8 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         updatePath( currentX, prevX, mRadius, false );
         updateIconScale(1);
 
-        if ( Math.abs( currentX -  prevX ) > getItemWidth() * 0.5 ){
+        // if diff > threshold, update translate
+        if ( Math.abs( currentX -  prevX ) > getItemWidth() * sThreshold ){
             if ( currentX > prevX ) updateCurrentFlag(nextOfCurrentFlag());
             else updateCurrentFlag(prevOfCurrentFlag());
             mGummyAnimatorHelper.launchAnim(
@@ -264,7 +278,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     private void updateCurrentFlag(int flag){
         mCurrentFlag = flag;
         boolean isPressed;
-        for (int i = 0 ; i < getChildCount() ; i++ ){
+        for (int i = 0; i < getChildCount(); i++ ){
             View view = getChildAt(i);
             isPressed = i == mCurrentFlag;
             view.setPressed(isPressed);

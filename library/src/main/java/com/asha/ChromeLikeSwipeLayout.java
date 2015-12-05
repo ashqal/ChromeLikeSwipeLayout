@@ -8,7 +8,6 @@ import android.support.annotation.DrawableRes;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -70,24 +69,18 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         Config config = makeConfig();
         TypedArray ta = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ChromeLikeSwipeLayout,defStyleAttr,0);
         if ( ta != null ){
-            if (ta.hasValue(R.styleable.ChromeLikeSwipeLayout_circleColor)){
+            if (ta.hasValue(R.styleable.ChromeLikeSwipeLayout_circleColor))
                 config.circleColor(ta.getColor(R.styleable.ChromeLikeSwipeLayout_circleColor,Config.DEFAULT));
-            }
-            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_gap)){
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_gap))
                 config.gap(ta.getDimensionPixelOffset(R.styleable.ChromeLikeSwipeLayout_gap,Config.DEFAULT));
-            }
-            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_radius)){
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_radius))
                 config.radius(ta.getDimensionPixelOffset(R.styleable.ChromeLikeSwipeLayout_radius,Config.DEFAULT));
-            }
-            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_collapseDuration)){
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_collapseDuration))
                 config.collapseDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_collapseDuration,Config.DEFAULT));
-            }
-            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_rippleDuration)){
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_rippleDuration))
                 config.rippleDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_rippleDuration,Config.DEFAULT));
-            }
-            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_gummyDuration)){
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_gummyDuration))
                 config.gummyDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_gummyDuration,Config.DEFAULT));
-            }
             ta.recycle();
         }
         config.setTo(this);
@@ -119,24 +112,14 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         if ( mAnimationStarted ) return false;
 
         switch ( action & MotionEvent.ACTION_MASK  ) {
-
             case MotionEvent.ACTION_DOWN:
                 mActivePointerId = MotionEventCompat.getPointerId(event, 0);
                 final float initialDownY = getMotionEventY(event, mActivePointerId);
                 if ( initialDownY == -1 ) return false;
                 if ( mBeginDragging ){
-                    float diff;
-                    if ( mTopOffset < 0 ){
-                        diff = 0;
-                    } else if( mTopOffset > sThreshold ){
-                        diff = sThreshold;
-                    } else {
-                        diff = mTopOffset;
-                    }
-                    mTouchDownActor = initialDownY - diff;
+                    mTouchDownActor = getNewTouchDownActor(initialDownY);
                     return true;
                 }
-
                 mTouchDownActor = initialDownY;
                 mBeginDragging = false;
                 mChromeLikeLayout.onActionDown();
@@ -147,26 +130,23 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (mActivePointerId == INVALID_POINTER) {
-                    Log.e(TAG, "Got ACTION_MOVE event but don't have an active pointer id.");
+                    //Log.e(TAG, "Got ACTION_MOVE event but don't have an active pointer id.");
                     return false;
                 }
                 final float y = getMotionEventY(event, mActivePointerId);
                 if (y == -1) {
                     return false;
                 }
-
-                //Log.e(TAG, String.format("onInterceptTouchEvent ACTION_MOVE moving:%f",(getY - mTouchDownActor)));
+                // if diff > mTouchSlop
+                // let's drag!
                 if ( !mBeginDragging && y - mTouchDownActor > mTouchSlop ) {
                     mBeginDragging = true;
                 }
-                //Log.d(TAG, String.format("onInterceptTouchEvent ACTION_MOVE mBeginDragging=%b",mBeginDragging));
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
-                //Log.d(TAG, String.format("onInterceptTouchEvent ACTION_POINTER_DOWN"));
                 break;
             case MotionEvent.ACTION_POINTER_UP:
                 onSecondaryPointerUp(event);
-                //Log.d(TAG, String.format("onInterceptTouchEvent ACTION_POINTER_UP"));
                 break;
         }
         return mBeginDragging;
@@ -178,7 +158,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         final int action = MotionEventCompat.getActionMasked(event);
         int pointerIndex = MotionEventCompat.findPointerIndex(event, mActivePointerId);
         if (pointerIndex < 0) {
-            Log.e(TAG, "Got ACTION_MOVE event but have an invalid active pointer id.");
+            //Log.e(TAG, "Got ACTION_MOVE event but have an invalid active pointer id.");
             return false;
         }
         final float y = MotionEventCompat.getY(event, pointerIndex);
@@ -214,7 +194,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             case MotionEvent.ACTION_POINTER_DOWN:
                 pointerIndex = MotionEventCompat.getActionIndex(event);
                 if (pointerIndex < 0) {
-                    Log.e(TAG, "Got ACTION_POINTER_DOWN event but have an invalid action index.");
+                    //Log.e(TAG, "Got ACTION_POINTER_DOWN event but have an invalid action index.");
                     return false;
                 }
                 mActivePointerId = MotionEventCompat.getPointerId(event, pointerIndex);
@@ -224,6 +204,18 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 break;
         }
         return true;
+    }
+
+    private float getNewTouchDownActor(float y){
+        float diff;
+        if ( mTopOffset < 0 ){
+            diff = 0;
+        } else if( mTopOffset > sThreshold ){
+            diff = sThreshold;
+        } else {
+            diff = mTopOffset;
+        }
+        return y - diff;
     }
 
     private void onSecondaryPointerUp(MotionEvent ev) {
@@ -252,7 +244,6 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         }
         return (int) basic;
     }
-
 
     private void childOffsetTopAndBottom(int currentTop, int offset){
         int target;
