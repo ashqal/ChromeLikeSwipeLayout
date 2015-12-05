@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
@@ -129,9 +130,9 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         reset();
     }
 
-    public void onActionMove(MotionEvent event, boolean isExpanded){
+    public void onActionMove(MotionEvent event, int pointerIndex, boolean isExpanded){
         if ( !mTouchHelper.isExpanded() && isExpanded ){
-            mTouchHelper.feed(event);
+            mTouchHelper.feed(event, pointerIndex);
             return;
         }
 
@@ -140,7 +141,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             return;
         }
 
-        mTouchHelper.feed(event);
+        mTouchHelper.feed(event, pointerIndex);
         if ( !mTouchHelper.isMoving() ){
             updateAlpha(1);
             updatePath( 0, 0, mRadius, false );
@@ -370,9 +371,9 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             return mStatus > STATUS_NONE;
         }
 
-        public void feed(MotionEvent event){
+        public void feed(MotionEvent event, int pointerIndex){
             int status = mStatus;
-            float tmpX = event.getX();
+            float tmpX = MotionEventCompat.getX(event,pointerIndex);
             switch ( status ){
                 case STATUS_NONE:
                 case STATUS_EXPANDED:
