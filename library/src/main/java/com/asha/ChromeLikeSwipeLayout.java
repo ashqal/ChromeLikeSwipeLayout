@@ -299,19 +299,10 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         };
         animation.setDuration(mCollapseDuration);
         animation.setInterpolator(new DecelerateInterpolator());
-        animation.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-            }
-
+        animation.setAnimationListener(new AnimationListenerAdapter() {
             @Override
             public void onAnimationEnd(Animation animation) {
                 mAnimationStarted = false;
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
             }
         });
         this.clearAnimation();

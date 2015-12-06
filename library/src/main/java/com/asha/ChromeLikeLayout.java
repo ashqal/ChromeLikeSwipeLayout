@@ -233,33 +233,33 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             //if ( distance < mTouchSlop ) distance = 0;
             mDegrees = tempDegree;
         }
-        float realLong = radius + distance;
-        float realShort = radius - distance * 0.1f;
+        float longRadius = radius + distance;
+        float shortRadius = radius - distance * 0.1f;
 
         mPath.reset();
 
         mPath.lineTo(0, -radius);
         mPath.cubicTo(radius * sMagicNumber, -radius
-                , realLong, -radius * sMagicNumber
-                , realLong, 0);
+                , longRadius, -radius * sMagicNumber
+                , longRadius, 0);
         mPath.lineTo(0, 0);
 
         mPath.lineTo(0, radius);
         mPath.cubicTo(radius * sMagicNumber, radius
-                , realLong, radius * sMagicNumber
-                , realLong, 0);
+                , longRadius, radius * sMagicNumber
+                , longRadius, 0);
         mPath.lineTo(0, 0);
 
         mPath.lineTo(0, -radius);
         mPath.cubicTo(-radius * sMagicNumber, -radius
-                , -realShort, -radius * sMagicNumber
-                , -realShort, 0);
+                , -shortRadius, -radius * sMagicNumber
+                , -shortRadius, 0);
         mPath.lineTo(0, 0);
 
         mPath.lineTo(0, radius);
         mPath.cubicTo(-radius * sMagicNumber, radius
-                , -realShort, radius * sMagicNumber
-                , -realShort, 0);
+                , -shortRadius, radius * sMagicNumber
+                , -shortRadius, 0);
         mPath.lineTo(0, 0);
 
         //postInvalidate();
@@ -437,7 +437,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         }
     }
 
-    public class RippleAnimatorHelper implements Animation.AnimationListener {
+    public class RippleAnimatorHelper extends AnimationListenerAdapter {
 
         private float mAnimFromRadius;
         private float mAnimToRadius;
@@ -470,15 +470,11 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             target.clearAnimation();
             target.startAnimation(animation);
             mAnimationStarted = true;
+            mEventDispatched = false;
         }
 
         public boolean isAnimationStarted() {
             return mAnimationStarted;
-        }
-
-        @Override
-        public void onAnimationStart(Animation animation) {
-            mEventDispatched = false;
         }
 
         @Override
@@ -490,18 +486,13 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             }
         }
 
-        @Override
-        public void onAnimationRepeat(Animation animation) {
-
-        }
-
         public void setDuration(int duration) {
             this.mDuration = duration;
         }
     }
 
 
-    public class GummyAnimatorHelper implements Animation.AnimationListener   {
+    public class GummyAnimatorHelper extends AnimationListenerAdapter   {
 
         private float mAnimFromX;
         private float mAnimToX;
@@ -545,18 +536,9 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         }
 
         @Override
-        public void onAnimationStart(Animation animation) {
-        }
-
-        @Override
         public void onAnimationEnd(Animation animation) {
             mAnimationStarted = false;
             mTouchHelper.resetToReady(mAnimFromX);
-        }
-
-        @Override
-        public void onAnimationRepeat(Animation animation) {
-
         }
 
         public void setDuration(int duration) {
