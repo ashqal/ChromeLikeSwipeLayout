@@ -1,11 +1,8 @@
 # ChromeLikeSwipeLayout
 Pull down, and execute more action!
 
-## Demo Video
-View the [demo video](https://youtu.be/z0FjPeJEx7o) on Youtube.
-
 ## Screenshot
-![Logo](https://raw.githubusercontent.com/ashqal/ChromeLikeSwipeLayout/master/screenshot/screenshot.png)
+![DemoPreview](https://raw.githubusercontent.com/ashqal/ChromeLikeSwipeLayout/master/screenshot/DemoPreview.gif)
 </br>
 
 ## Usage
