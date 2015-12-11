@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply from :'upload.gradle'
 
 android {
     compileSdkVersion 23
@@ -8,7 +9,7 @@ android {
         minSdkVersion 7
         targetSdkVersion 23
         versionCode 1
-        versionName "1.0"
+        versionName releaseVersion
     }
     buildTypes {
         release {

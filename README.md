@@ -50,10 +50,9 @@ ChromeLikeSwipeLayout.makeConfig()
 ```
 
 ## Supported
-* View which can scroll: AbsListView, RecyclerView, ScrollView
-* can't scroll: whatever you want
+* All ViewGroup
 
-## Maven
+## Download
 Coming soon.
 
 ##LICENSE
