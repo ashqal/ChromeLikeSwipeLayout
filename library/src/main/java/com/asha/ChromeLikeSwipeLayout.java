@@ -28,11 +28,7 @@ import java.util.List;
  * hzqiujiadi ashqalcn@gmail.com
  */
 public class ChromeLikeSwipeLayout extends ViewGroup {
-    private static final String TAG = "ChromeLikeSwipeLayout";
-    private static final int INVALID_POINTER = -1;
-    private static final int sThreshold = dp2px(120);
-    private static final int sThreshold2 = dp2px(400);
-    private static Class sRecyclerViewClz;
+
     static {
         try {
             sRecyclerViewClz = Class.forName("android.support.v7.widget.RecyclerView");
@@ -42,6 +38,51 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         }
     }
 
+    public class StatusManager {
+        private int mStatus = STATUS_IDLE;
+        private static final int STATUS_IDLE       = 0;
+        private static final int STATUS_CHANGED    = 1;
+        private static final int STATUS_BUSY       = 2;
+        private static final int STATUS_RESTORE    = 3;
+
+        public void toIdle(){
+            mStatus = STATUS_IDLE;
+        }
+
+        public void toBusy(){
+            mStatus = STATUS_BUSY;
+        }
+
+        public void toRestore(){
+            mStatus = STATUS_RESTORE;
+        }
+
+        public void toChanged(){
+            mStatus = STATUS_CHANGED;
+        }
+
+        public boolean isChanged(){
+            return  mStatus == STATUS_CHANGED;
+        }
+
+        public boolean isBusying(){
+            return mStatus == STATUS_BUSY;
+        }
+
+        public boolean isRestoring(){
+            return mStatus == STATUS_RESTORE;
+        }
+
+        public boolean isIdle(){
+            return  mStatus == STATUS_IDLE;
+        }
+    }
+
+    private static final String TAG = "ChromeLikeSwipeLayout";
+    private static final int INVALID_POINTER = -1;
+    private static final int sThreshold = dp2px(120);
+    private static final int sThreshold2 = dp2px(400);
+    private static Class sRecyclerViewClz;
     private View mTarget; // the target of the gesture
     private ChromeLikeLayout mChromeLikeLayout;
     private boolean mBeginDragging;
@@ -50,7 +91,8 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     private int mCollapseDuration = 300;
     private float mTouchDownActor;
     private int mActivePointerId = INVALID_POINTER;
-    private boolean mIsBusy;
+    private StatusManager mStatusManager = new StatusManager();
+
     private IOnItemSelectedListener mOnItemSelectedListener;
     private LinkedList<IOnExpandViewListener> mExpandListeners = new LinkedList<>();
 
@@ -94,8 +136,8 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         mChromeLikeLayout.setRippleListener(new ChromeLikeLayout.IOnRippleListener() {
             @Override
             public void onRippleAnimFinished(int index) {
-                mIsBusy = false;
-                if ( !mAnimationStarted ) launchResetAnimAfterRipple();
+                mStatusManager.toRestore();
+                if ( !mAnimationStarted ) launchResetAnim();
                 mBeginDragging = false;
                 if ( mOnItemSelectedListener != null )
                     mOnItemSelectedListener.onItemSelected(index);
@@ -141,6 +183,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 // let's drag!
                 if ( !mBeginDragging && y - mTouchDownActor > mTouchSlop ) {
                     mBeginDragging = true;
+                    mStatusManager.toChanged();
                 }
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
@@ -264,25 +307,24 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         requestLayout();
     }
 
+    // only execute on ACTION_UP
     private void executeAction(boolean isExpanded) {
 
         if ( isExpanded ){
-            mIsBusy = true;
+            mStatusManager.toBusy();
         } else {
-            if ( mIsBusy ) return;
+            if ( !mStatusManager.isIdle() ) return;
             if ( mAnimationStarted ) return;
-            launchResetAnimFromCancel();
+            launchResetAnim();
             mBeginDragging = false;
         }
     }
 
-    private void launchResetAnimAfterRipple(){
-        launchResetAnim(false);
+    private void launchResetAnim(){
+        boolean isFromCancel = !mStatusManager.isRestoring();
+        launchResetAnim(isFromCancel);
     }
 
-    private void launchResetAnimFromCancel(){
-        launchResetAnim(true);
-    }
     private boolean mAnimationStarted;
     private void launchResetAnim( final boolean isFromCancel ){
         ensureTarget();
@@ -303,6 +345,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             @Override
             public void onAnimationEnd(Animation animation) {
                 mAnimationStarted = false;
+                mStatusManager.toIdle();
             }
         });
         this.clearAnimation();
