@@ -25,9 +25,9 @@ public class ScrollViewActivity extends SubActivity {
                 .backgroundColor(0xFF111111)
                 .gap(dp2px(32))
                 .radius(dp2px(38))
-                .gummyDuration(1000)
-                .rippleDuration(1000)
-                .collapseDuration(1000)
+                .gummyDuration(300)
+                .rippleDuration(200)
+                .collapseDuration(200)
                 .listenItemSelected(new ChromeLikeSwipeLayout.IOnItemSelectedListener() {
                     @Override
                     public void onItemSelected(int index) {

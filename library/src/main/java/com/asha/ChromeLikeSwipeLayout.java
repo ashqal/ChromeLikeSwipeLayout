@@ -313,7 +313,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         if ( isExpanded ){
             mStatusManager.toBusy();
         } else {
-            if ( !mStatusManager.isIdle() ) return;
+            if ( mStatusManager.isBusying() ) return;
             if ( mAnimationStarted ) return;
             launchResetAnim();
             mBeginDragging = false;
