@@ -8,6 +8,7 @@ import android.support.annotation.DrawableRes;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -105,8 +106,13 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 // This was our active pointer going up. Choose a new
                 // active pointer and adjust accordingly.
                 final int newPointerIndex = pointerIndex == 0 ? 1 : 0;
-                mActivePointerId = MotionEventCompat.getPointerId(ev, newPointerIndex);
+                setActivePointerId(MotionEventCompat.getPointerId(ev, newPointerIndex));
             }
+        }
+
+        public void setActivePointerId(int id){
+            mActivePointerId = id;
+            Log.e(TAG,"setActivePointerId:" + id);
         }
 
         private float getMotionEventY(MotionEvent ev, int activePointerId) {
@@ -199,12 +205,13 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
+        Log.d(TAG,"onInterceptTouchEvent:" + event);
         if ( canChildDragDown() ) return false;
         if ( mAnimationStarted ) return false;
         int action = event.getAction();
         switch ( action & MotionEvent.ACTION_MASK  ) {
             case MotionEvent.ACTION_DOWN:
-                mTouchManager.mActivePointerId = MotionEventCompat.getPointerId(event, 0);
+                mTouchManager.setActivePointerId(MotionEventCompat.getPointerId(event, 0));
                 final float initialDownY = mTouchManager.getMotionEventY(event, mTouchManager.mActivePointerId);
                 if ( initialDownY == -1 ) return false;
                 if ( mTouchManager.mBeginDragging ){
@@ -217,7 +224,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                 break;
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_UP:
-                mTouchManager.mActivePointerId = TouchManager.INVALID_POINTER;
+                mTouchManager.setActivePointerId(TouchManager.INVALID_POINTER);
                 break;
             case MotionEvent.ACTION_MOVE:
                 if ( mTouchManager.mActivePointerId == TouchManager.INVALID_POINTER) {
@@ -246,6 +253,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        Log.d(TAG,"onTouchEvent:" + event);
         final int action = MotionEventCompat.getActionMasked(event);
         int pointerIndex = MotionEventCompat.findPointerIndex(event, mTouchManager.mActivePointerId);
         if (pointerIndex < 0) {
@@ -260,7 +268,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
 
         switch ( action ) {
             case MotionEvent.ACTION_DOWN:
-                mTouchManager.mActivePointerId = MotionEventCompat.getPointerId(event, 0);
+                mTouchManager.setActivePointerId(MotionEventCompat.getPointerId(event, 0));
                 break;
             case MotionEvent.ACTION_CANCEL:
                 mChromeLikeLayout.onActionUpOrCancel(isExpanded);
@@ -268,7 +276,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
             case MotionEvent.ACTION_UP:
                 executeAction(isExpanded);
                 mChromeLikeLayout.onActionUpOrCancel(isExpanded);
-                mTouchManager.mActivePointerId = TouchManager.INVALID_POINTER;
+                mTouchManager.setActivePointerId(TouchManager.INVALID_POINTER);
                 break;
             case MotionEvent.ACTION_MOVE:
                 mChromeLikeLayout.onActionMove(event, pointerIndex, isExpanded);
@@ -287,7 +295,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
                     //Log.e(TAG, "Got ACTION_POINTER_DOWN event but have an invalid action index.");
                     return false;
                 }
-                mTouchManager.mActivePointerId = MotionEventCompat.getPointerId(event, pointerIndex);
+                mTouchManager.setActivePointerId(MotionEventCompat.getPointerId(event, pointerIndex));
                 break;
             case MotionEvent.ACTION_POINTER_UP:
                 mTouchManager.onSecondaryPointerUp(event);
