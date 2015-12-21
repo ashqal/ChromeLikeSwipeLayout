@@ -43,7 +43,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     private IOnRippleListener mRippleListener;
     private GummyAnimatorHelper mGummyAnimatorHelper = new GummyAnimatorHelper();
     private RippleAnimatorHelper mRippleAnimatorHelper = new RippleAnimatorHelper();
-    private TouchManager mTouchManager;
+    private TouchHelper mTouchHelper;
 
     public ChromeLikeLayout(Context context) {
         this(context,null);
@@ -93,7 +93,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
 
     private void init() {
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
-        mTouchManager = new TouchManager(configuration.getScaledTouchSlop());
+        mTouchHelper = new TouchHelper(configuration.getScaledTouchSlop());
 
         setBackgroundColor(sDefaultBackgroundColor);
 
@@ -134,24 +134,24 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
 
     public void onActionMove(MotionEvent event, int pointerIndex, boolean isExpanded){
         // feed MotionEvent after first expanded
-        if ( !mTouchManager.isExpanded() && isExpanded ){
-            mTouchManager.feed(event, pointerIndex);
+        if ( !mTouchHelper.isExpanded() && isExpanded ){
+            mTouchHelper.feed(event, pointerIndex);
             return;
         }
 
-        // reset the mTouchManager if view is collapsed
+        // reset the mTouchHelper if view is collapsed
         if ( !isExpanded ) {
-            mTouchManager.reset();
+            mTouchHelper.reset();
             return;
         }
         // now, the view must be expanded.
 
         // feed the MotionEvent
-        // to update mTouchManager status.
-        mTouchManager.feed(event, pointerIndex);
+        // to update mTouchHelper status.
+        mTouchHelper.feed(event, pointerIndex);
 
         // if not in moving status
-        if ( !mTouchManager.isMoving() ){
+        if ( !mTouchHelper.isMoving() ){
             updateAlpha(1);
             updatePath( 0, 0, mRadius, false );
             updateIconScale(1);
@@ -159,20 +159,20 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         }
 
         if ( mGummyAnimatorHelper.isAnimationStarted() ){
-            mGummyAnimatorHelper.updateFromX(mTouchManager.getCurrentX());
+            mGummyAnimatorHelper.updateFromX(mTouchHelper.getCurrentX());
             return;
         }
 
         // we can't move to left if the first circle is selected
         // neither to right if the last circle is selected
         if ( mCurrentFlag == prevOfCurrentFlag() )
-            mTouchManager.testLeftEdge();
+            mTouchHelper.testLeftEdge();
         if ( mCurrentFlag == nextOfCurrentFlag() )
-            mTouchManager.testRightEdge();
+            mTouchHelper.testRightEdge();
 
         // now, the values can be trusted
-        float currentX = mTouchManager.getCurrentX();
-        float prevX = mTouchManager.getPrevX();
+        float currentX = mTouchHelper.getCurrentX();
+        float prevX = mTouchHelper.getPrevX();
 
         updateAlpha(1);
         updatePath( currentX, prevX, mRadius, false );
@@ -192,8 +192,8 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
 
     public void onActionUpOrCancel(boolean isExpanded){
         if ( getChildCount() == 0 ) return;
-        if ( !mTouchManager.isExpanded() ) return;
-        mTouchManager.reset();
+        if ( !mTouchHelper.isExpanded() ) return;
+        mTouchHelper.reset();
 
         if ( isExpanded ){
             boolean isRippleAnimEnabled = getChildCount() > 0;
@@ -363,7 +363,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         void onRippleAnimFinished(int index);
     }
 
-    public static class TouchManager {
+    public static class TouchHelper {
         private final int mTouchSlop;
         private int mStatus;
         private final int STATUS_NONE       = 0;
@@ -374,7 +374,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         private float mMovingPrevX;
         private float mMovingCurrentX;
 
-        public TouchManager(int mTouchSlop) {
+        public TouchHelper(int mTouchSlop) {
             this.mTouchSlop = mTouchSlop;
         }
 
@@ -538,7 +538,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         @Override
         public void onAnimationEnd(Animation animation) {
             mAnimationStarted = false;
-            mTouchManager.resetToReady(mAnimFromX);
+            mTouchHelper.resetToReady(mAnimFromX);
         }
 
         public void setDuration(int duration) {
