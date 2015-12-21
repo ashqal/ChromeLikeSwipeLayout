@@ -19,6 +19,7 @@
         <activity android:name=".LinearLayoutActivity" android:label="LinearLayoutActivity"/>
         <activity android:name=".ListViewActivity" android:label="ListViewActivity"/>
         <activity android:name=".RecyclerViewActivity" android:label="RecyclerViewActivity"/>
+        <activity android:name=".NestedRecyclerViewActivity" android:label="NestedRecyclerViewActivity"/>
     </application>
 
 </manifest>

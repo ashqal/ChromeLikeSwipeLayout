@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.asha.chromelikeswipelayout"
-        minSdkVersion 7
+        minSdkVersion 8
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
@@ -25,5 +25,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.android.support:design:23.1.1'
     compile 'com.android.support:recyclerview-v7:23.1.1'
+    compile 'com.android.support:percent:23.1.1'
     compile project(':library')
 }

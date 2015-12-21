@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:test="http://schemas.android.com/tools">
+    <com.asha.ChromeLikeSwipeLayout
+        android:id="@+id/chrome_like_swipe_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <android.support.percent.PercentRelativeLayout
+            xmlns:test="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <android.support.v7.widget.RecyclerView
+                android:background="#fff5d0"
+                android:id="@+id/recyclerView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                test:layout_heightPercent="50%"
+                test:layout_widthPercent="33%"
+                android:layout_centerVertical="true"
+                >
+            </android.support.v7.widget.RecyclerView>
+            <ScrollView
+                android:background="#ffe7f7"
+                android:layout_toRightOf="@id/recyclerView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                test:layout_heightPercent="80%"
+                test:layout_widthPercent="33%"
+                >
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:gravity="center"
+                        android:text="I am in ScrollView" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:gravity="center"
+                        android:text="I am in ScrollView" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:gravity="center"
+                        android:text="I am in ScrollView" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:gravity="center"
+                        android:text="I am in ScrollView" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:gravity="center"
+                        android:text="I am in ScrollView" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:gravity="center"
+                        android:text="I am in ScrollView" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:gravity="center"
+                        android:text="I am in ScrollView" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:gravity="center"
+                        android:text="I am in ScrollView" />
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:gravity="center"
+                        android:text="I am in ScrollView" />
+                </LinearLayout>
+            </ScrollView>
+        </android.support.percent.PercentRelativeLayout>
+    </com.asha.ChromeLikeSwipeLayout>
+</RelativeLayout>

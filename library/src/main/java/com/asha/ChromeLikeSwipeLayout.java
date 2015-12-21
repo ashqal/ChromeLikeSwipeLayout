@@ -3,6 +3,7 @@ package com.asha;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.PointF;
 import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.v4.view.MotionEventCompat;
@@ -35,121 +36,6 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         } catch (ClassNotFoundException e) {
             // ignore
             // e.printStackTrace();
-        }
-    }
-
-    public static class StatusManager {
-        private int mStatus = STATUS_IDLE;
-        private static final int STATUS_IDLE       = 0;
-        private static final int STATUS_CHANGED    = 1;
-        private static final int STATUS_BUSY       = 2;
-        private static final int STATUS_RESTORE    = 3;
-
-        public void toIdle(){
-            mStatus = STATUS_IDLE;
-        }
-
-        public void toBusy(){
-            mStatus = STATUS_BUSY;
-        }
-
-        public void toRestore(){
-            mStatus = STATUS_RESTORE;
-        }
-
-        public void toChanged(){
-            mStatus = STATUS_CHANGED;
-        }
-
-        public boolean isChanged(){
-            return  mStatus == STATUS_CHANGED;
-        }
-
-        public boolean isBusying(){
-            return mStatus == STATUS_BUSY;
-        }
-
-        public boolean isRestoring(){
-            return mStatus == STATUS_RESTORE;
-        }
-
-        public boolean isIdle(){
-            return  mStatus == STATUS_IDLE;
-        }
-    }
-
-    public class TouchManager {
-        public static final int INVALID_POINTER = -1;
-        public boolean mBeginDragging;
-        public int mTopOffset;
-        public int mTouchSlop;
-        public float mTouchDownActor;
-        public int mActivePointerId = INVALID_POINTER;
-
-        private void onSecondaryPointerUp(MotionEvent ev) {
-            final int pointerIndex = MotionEventCompat.getActionIndex(ev);
-            final int pointerId = MotionEventCompat.getPointerId(ev, pointerIndex);
-            if (pointerId == mActivePointerId) {
-                // This was our active pointer going up. Choose a new
-                // active pointer and adjust accordingly.
-                final int newPointerIndex = pointerIndex == 0 ? 1 : 0;
-                setActivePointerId(ev, newPointerIndex);
-            }
-        }
-
-        public void setActivePointerId(MotionEvent event, int defaultId){
-            int id = MotionEventCompat.getPointerId(event, defaultId);
-            mActivePointerId = id;
-            final float initialDownY = mTouchManager.getCurrentMotionEventY(event);
-            if ( initialDownY == -1 ) return;
-            if ( mTouchManager.mBeginDragging ){
-                mTouchManager.mTouchDownActor = mTouchManager.calculateTouchDown(initialDownY);
-            }
-        }
-
-        public void resetActivePointerId(){
-            mActivePointerId = INVALID_POINTER;
-        }
-
-        private float getCurrentMotionEventY(MotionEvent ev) {
-            final int index = MotionEventCompat.findPointerIndex(ev, mTouchManager.mActivePointerId);
-            if (index < 0) {
-                return -1;
-            }
-            return MotionEventCompat.getY(ev, index);
-        }
-
-        public void setTouchSlop(int touchSlop) {
-            this.mTouchSlop = touchSlop;
-        }
-
-        public void endDrag(){
-            mBeginDragging = false;
-        }
-
-        private int calculateTopOffset(float y){
-            float original = y - mTouchDownActor;
-            float basic = original * 0.6f;
-            if ( basic > sThreshold ){
-                basic = sThreshold + (basic - sThreshold) * 0.3f;
-            }
-            return (int) basic;
-        }
-
-        private float calculateTouchDown(float y){
-            float diff;
-            if ( mTopOffset < 0 ){
-                diff = 0;
-            } else if( mTopOffset > sThreshold ){
-                diff = (mTopOffset - sThreshold ) / 0.3f / 0.6f + sThreshold / 0.6f;
-            } else {
-                diff = mTopOffset / 0.6f;
-            }
-            return y - diff;
-        }
-
-        public void setTopOffset(float y) {
-            mTopOffset = calculateTopOffset(y);
         }
     }
 
@@ -218,8 +104,8 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        if ( canChildDragDown() ) return false;
         if ( mAnimationStarted ) return false;
+        if ( canChildDragDown(mTouchManager.event2Point(event)) ) return false;
         int action = event.getAction();
         switch ( action & MotionEvent.ACTION_MASK  ) {
             case MotionEvent.ACTION_DOWN:
@@ -383,7 +269,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
     @Override
     public void addView(View child, int index, LayoutParams params) {
 
-        boolean touchAlwaysTrue =  child instanceof ScrollView
+        boolean touchAlwaysTrue = child instanceof ScrollView
                 || child instanceof AbsListView
                 || (sRecyclerViewClz != null && child.getClass().isAssignableFrom(sRecyclerViewClz))
                 || child instanceof TouchAlwaysTrueLayout
@@ -444,10 +330,12 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         //super.requestDisallowInterceptTouchEvent(b);
     }
 
-    private boolean canChildDragDown()
-    {
+    private boolean canChildDragDown(PointF pointF){
         ensureTarget();
-        return ViewCompat.canScrollVertically(mTarget,-1);
+        if ( mTarget instanceof TouchAlwaysTrueLayout )
+            return ((TouchAlwaysTrueLayout) mTarget).canChildDragDown(pointF);
+        else return ViewCompat.canScrollVertically(mTarget,-1);
+
     }
 
     private void ensureTarget() {
@@ -600,4 +488,125 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
         void onItemSelected(int index);
     }
 
+    public static class StatusManager {
+
+        private int mStatus = STATUS_IDLE;
+        private static final int STATUS_IDLE       = 0;
+        private static final int STATUS_CHANGED    = 1;
+        private static final int STATUS_BUSY       = 2;
+        private static final int STATUS_RESTORE    = 3;
+
+        public void toIdle(){
+            mStatus = STATUS_IDLE;
+        }
+
+        public void toBusy(){
+            mStatus = STATUS_BUSY;
+        }
+
+        public void toRestore(){
+            mStatus = STATUS_RESTORE;
+        }
+
+        public void toChanged(){
+            mStatus = STATUS_CHANGED;
+        }
+
+        public boolean isChanged(){
+            return  mStatus == STATUS_CHANGED;
+        }
+
+        public boolean isBusying(){
+            return mStatus == STATUS_BUSY;
+        }
+
+        public boolean isRestoring(){
+            return mStatus == STATUS_RESTORE;
+        }
+
+        public boolean isIdle(){
+            return  mStatus == STATUS_IDLE;
+        }
+    }
+
+    public class TouchManager {
+        public static final int INVALID_POINTER = -1;
+        public boolean mBeginDragging;
+        public int mTopOffset;
+        public int mTouchSlop;
+        public float mTouchDownActor;
+        public int mActivePointerId = INVALID_POINTER;
+        private PointF mTmpPoint = new PointF();
+
+        private void onSecondaryPointerUp(MotionEvent ev) {
+            final int pointerIndex = MotionEventCompat.getActionIndex(ev);
+            final int pointerId = MotionEventCompat.getPointerId(ev, pointerIndex);
+            if (pointerId == mActivePointerId) {
+                // This was our active pointer going up. Choose a new
+                // active pointer and adjust accordingly.
+                final int newPointerIndex = pointerIndex == 0 ? 1 : 0;
+                setActivePointerId(ev, newPointerIndex);
+            }
+        }
+
+        public void setActivePointerId(MotionEvent event, int defaultId){
+            int id = MotionEventCompat.getPointerId(event, defaultId);
+            mActivePointerId = id;
+            final float initialDownY = mTouchManager.getCurrentMotionEventY(event);
+            if ( initialDownY == -1 ) return;
+            if ( mTouchManager.mBeginDragging ){
+                mTouchManager.mTouchDownActor = mTouchManager.calculateTouchDown(initialDownY);
+            }
+        }
+
+        public void resetActivePointerId(){
+            mActivePointerId = INVALID_POINTER;
+        }
+
+        private float getCurrentMotionEventY(MotionEvent ev) {
+            final int index = MotionEventCompat.findPointerIndex(ev, mTouchManager.mActivePointerId);
+            if (index < 0) {
+                return -1;
+            }
+            return MotionEventCompat.getY(ev, index);
+        }
+
+        public void setTouchSlop(int touchSlop) {
+            this.mTouchSlop = touchSlop;
+        }
+
+        public void endDrag(){
+            mBeginDragging = false;
+        }
+
+        private int calculateTopOffset(float y){
+            float original = y - mTouchDownActor;
+            float basic = original * 0.6f;
+            if ( basic > sThreshold ){
+                basic = sThreshold + (basic - sThreshold) * 0.3f;
+            }
+            return (int) basic;
+        }
+
+        private float calculateTouchDown(float y){
+            float diff;
+            if ( mTopOffset < 0 ){
+                diff = 0;
+            } else if( mTopOffset > sThreshold ){
+                diff = (mTopOffset - sThreshold ) / 0.3f / 0.6f + sThreshold / 0.6f;
+            } else {
+                diff = mTopOffset / 0.6f;
+            }
+            return y - diff;
+        }
+
+        public void setTopOffset(float y) {
+            mTopOffset = calculateTopOffset(y);
+        }
+
+        public PointF event2Point(MotionEvent event){
+            mTmpPoint.set(event.getX(),event.getY());
+            return mTmpPoint;
+        }
+    }
 }

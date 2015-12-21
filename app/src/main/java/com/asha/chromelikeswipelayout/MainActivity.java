@@ -36,4 +36,9 @@ public class MainActivity extends AppCompatActivity {
         Intent i = new Intent(this,RecyclerViewActivity.class);
         startActivity(i);
     }
+
+    public void OnNestedRecyclerViewClicked(View view) {
+        Intent i = new Intent(this,NestedRecyclerViewActivity.class);
+        startActivity(i);
+    }
 }

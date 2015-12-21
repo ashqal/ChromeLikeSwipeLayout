@@ -1,6 +1,8 @@
 package com.asha;
 
 import android.content.Context;
+import android.graphics.PointF;
+import android.support.v4.view.ViewCompat;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,5 +39,34 @@ public class TouchAlwaysTrueLayout extends ViewGroup {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         measureChildren(widthMeasureSpec,heightMeasureSpec);
+    }
+
+    public boolean canChildDragDown(PointF pointF){
+        return canChildDragDownTraversal(this, pointF.x, pointF.y);
+    }
+
+    private boolean canChildDragDownTraversal(View view, float x, float y){
+        if ( !inside(view, x, y) ) return false;
+        if ( ViewCompat.canScrollVertically(view,-1) ) return true;
+        boolean canDragDown;
+        if ( view instanceof ViewGroup ){
+            ViewGroup vp = (ViewGroup) view;
+            int count = vp.getChildCount();
+            float newX = x - view.getLeft();
+            float newY = y - view.getTop();
+            View sub;
+            for ( int i = 0 ; i < count; i++ ){
+                sub = vp.getChildAt(i);
+                canDragDown = canChildDragDownTraversal(sub,newX,newY);
+                if ( canDragDown ) return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean inside(View view, float x, float y ){
+        if ( view.getLeft() <= x && view.getRight() >= x && view.getTop() <= y && view.getBottom() >= y )
+            return true;
+        else return false;
     }
 }
