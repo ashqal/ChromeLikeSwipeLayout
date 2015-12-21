@@ -7,6 +7,7 @@ import android.graphics.PointF;
 import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.v4.view.MotionEventCompat;
+import android.support.v4.view.ScrollingView;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -30,19 +31,9 @@ import java.util.List;
  */
 public class ChromeLikeSwipeLayout extends ViewGroup {
 
-    static {
-        try {
-            sRecyclerViewClz = Class.forName("android.support.v7.widget.RecyclerView");
-        } catch (ClassNotFoundException e) {
-            // ignore
-            // e.printStackTrace();
-        }
-    }
-
     private static final String TAG = "ChromeLikeSwipeLayout";
     private static final int sThreshold = dp2px(120);
     private static final int sThreshold2 = dp2px(400);
-    private static Class sRecyclerViewClz;
     private View mTarget; // the target of the gesture
     private ChromeLikeLayout mChromeLikeLayout;
     private int mCollapseDuration = 300;
@@ -271,7 +262,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup {
 
         boolean touchAlwaysTrue = child instanceof ScrollView
                 || child instanceof AbsListView
-                || (sRecyclerViewClz != null && child.getClass().isAssignableFrom(sRecyclerViewClz))
+                || child instanceof ScrollingView
                 || child instanceof TouchAlwaysTrueLayout
                 || child instanceof ChromeLikeLayout;
 
