@@ -4,6 +4,8 @@ import android.graphics.PointF;
 import android.support.v4.view.MotionEventCompat;
 import android.view.MotionEvent;
 
+import static com.asha.ChromeLikeSwipeLayout.dp2px;
+
 /**
  * Created by hzqiujiadi on 15/12/22.
  * hzqiujiadi ashqalcn@gmail.com
@@ -17,11 +19,12 @@ public class TouchManager {
     private int mActivePointerId = INVALID_POINTER;
     private PointF mTmpPoint = new PointF();
     private ITouchCallback mTouchCallback;
-    private static int sThreshold;
+    private static final int sThreshold = dp2px(120);
+    private static final int sThreshold2 = dp2px(400);
+    private int mMotionX;
 
-    public TouchManager(ITouchCallback mTouchHelper, int threshold) {
+    public TouchManager(ITouchCallback mTouchHelper) {
         this.mTouchCallback = mTouchHelper;
-        sThreshold = threshold;
     }
 
     private void onSecondaryPointerUp(MotionEvent ev) {
@@ -40,7 +43,7 @@ public class TouchManager {
         final float initialDownY = getCurrentMotionEventY(event);
         if ( initialDownY == -1 ) return;
         if ( mBeginDragging ){
-            mTouchDownActor = calculateTouchDown(initialDownY);
+            mTouchDownActor = motionY2TouchDown(initialDownY);
         }
     }
 
@@ -64,29 +67,32 @@ public class TouchManager {
         mBeginDragging = false;
     }
 
-    private int calculateTopOffset(float y){
-        float original = y - mTouchDownActor;
-        float basic = original * 0.6f;
-        if ( basic > sThreshold ){
-            basic = sThreshold + (basic - sThreshold) * 0.3f;
-        }
-        return (int) basic;
+    public float calExpandProgress(int currentTop){
+        return currentTop * 1.0f / sThreshold;
     }
 
-    private float calculateTouchDown(float y){
-        float diff;
-        if ( mTopOffset < 0 ){
-            diff = 0;
-        } else if( mTopOffset > sThreshold ){
-            diff = (mTopOffset - sThreshold ) / 0.3f / 0.6f + sThreshold / 0.6f;
+    public int calTargetTopOffset(int currentTop){
+        return calTargetTopOffset(currentTop,getTopOffset());
+    }
+
+    public int calTargetTopOffset(int currentTop, int offset){
+        int target;
+        if ( currentTop <= sThreshold2 ) {
+            if ( offset < 0 ){
+                target = 0 - currentTop;
+            } else if ( offset < sThreshold2 ) {
+                target = offset - currentTop;
+            } else {
+                target = sThreshold2 - currentTop;
+            }
         } else {
-            diff = mTopOffset / 0.6f;
+            target = sThreshold2 - currentTop;
         }
-        return y - diff;
+        return target;
     }
 
     private void setTopOffset(float y) {
-        mTopOffset = calculateTopOffset(y);
+        mTopOffset = motionY2TopOffset(y);
     }
 
     public int getTopOffset() {
@@ -102,18 +108,37 @@ public class TouchManager {
         return mTmpPoint;
     }
 
+    private float motionY2TouchDown(float y){
+        float diff;
+        if ( mTopOffset < 0 ){
+            diff = 0;
+        } else if( mTopOffset > sThreshold ){
+            diff = (mTopOffset - sThreshold ) / 0.3f / 0.6f + sThreshold / 0.6f;
+        } else {
+            diff = mTopOffset / 0.6f;
+        }
+        return y - diff;
+    }
+
+    private int motionY2TopOffset(float y){
+        float original = y - mTouchDownActor;
+        float basic = original * 0.6f;
+        if ( basic > sThreshold ){
+            basic = sThreshold + (basic - sThreshold) * 0.3f;
+        }
+        return (int) basic;
+    }
+
     public boolean onFeedInterceptEvent(MotionEvent event){
         int action = event.getAction();
         switch ( action & MotionEvent.ACTION_MASK  ) {
             case MotionEvent.ACTION_DOWN:
                 setActivePointerId(event, 0);
-                final float initialDownY = getCurrentMotionEventY(event);
-                if (initialDownY == -1) {
-                    return false;
-                }
                 if ( mBeginDragging ){
                     return true;
                 }
+                final float initialDownY = getCurrentMotionEventY(event);
+                if (initialDownY == -1) return false;
                 mTouchDownActor = initialDownY;
                 mBeginDragging = false;
                 if ( mTouchCallback != null ) mTouchCallback.onActionDown();
@@ -172,7 +197,8 @@ public class TouchManager {
                 resetActivePointerId();
                 break;
             case MotionEvent.ACTION_MOVE:
-                if ( mTouchCallback != null ) mTouchCallback.onActionMove(isExpanded, event, pointerIndex);
+                mMotionX = (int) MotionEventCompat.getX(event,pointerIndex);
+                if ( mTouchCallback != null ) mTouchCallback.onActionMove(isExpanded, this);
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 pointerIndex = MotionEventCompat.getActionIndex(event);
@@ -189,11 +215,15 @@ public class TouchManager {
         return true;
     }
 
+    public int getMotionX() {
+        return mMotionX;
+    }
+
     public interface ITouchCallback {
         void onActionDown();
         void onActionUp(boolean isExpanded);
         void onActionCancel(boolean isExpanded);
-        void onActionMove(boolean isExpanded, MotionEvent event, int pointerIndex);
+        void onActionMove(boolean isExpanded, TouchManager touchManager);
         void onBeginDragging();
     }
 

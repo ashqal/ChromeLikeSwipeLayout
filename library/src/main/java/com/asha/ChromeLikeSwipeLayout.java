@@ -31,13 +31,12 @@ import java.util.List;
 public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITouchCallback {
 
     private static final String TAG = "ChromeLikeSwipeLayout";
-    private static final int sThreshold = dp2px(120);
-    private static final int sThreshold2 = dp2px(400);
     private View mTarget; // the target of the gesture
     private ChromeLikeLayout mChromeLikeLayout;
     private int mCollapseDuration = 300;
+    private boolean mAnimationStarted;
     private StatusManager mStatusManager = new StatusManager();
-    private TouchManager mTouchManager = new TouchManager(this,sThreshold);
+    private TouchManager mTouchManager = new TouchManager(this);
     private IOnItemSelectedListener mOnItemSelectedListener;
     private LinkedList<IOnExpandViewListener> mExpandListeners = new LinkedList<>();
 
@@ -104,21 +103,8 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
         return mTouchManager.onFeedTouchEvent(event);
     }
 
-    private void childOffsetTopAndBottom(int currentTop, int offset){
-        int target;
-        if ( currentTop <= sThreshold2 ) {
-            if ( offset < 0 ){
-                target = 0 - currentTop;
-            } else if ( offset < sThreshold2 ) {
-                target = offset - currentTop;
-            } else {
-                target = sThreshold2 - currentTop;
-            }
-        } else {
-            target = sThreshold2 - currentTop;
-        }
+    private void childOffsetTopAndBottom(int target){
         mTarget.offsetTopAndBottom( target );
-
         mChromeLikeLayout.offsetTopAndBottom( target );
         requestLayout();
     }
@@ -140,7 +126,6 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
         launchResetAnim(isFromCancel);
     }
 
-    private boolean mAnimationStarted;
     private void launchResetAnim( final boolean isFromCancel ){
         ensureTarget();
 
@@ -150,8 +135,9 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
             @Override
             protected void applyTransformation(float interpolatedTime, Transformation t) {
                 float step = (to - from) * interpolatedTime + from;
-                notifyOnExpandListeners( mTarget.getTop() * 1.0f / sThreshold ,isFromCancel);
-                childOffsetTopAndBottom( mTarget.getTop(), Math.round(step) );
+                int top =  mTarget.getTop();
+                notifyOnExpandListeners( mTouchManager.calExpandProgress(top) ,isFromCancel);
+                childOffsetTopAndBottom( mTouchManager.calTargetTopOffset(top, Math.round(step)) );
             }
         };
         animation.setDuration(mCollapseDuration);
@@ -317,15 +303,15 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
     }
 
     @Override
-    public void onActionMove(boolean isExpanded, MotionEvent event, int pointerIndex) {
-        mChromeLikeLayout.onActionMove(event, pointerIndex, isExpanded);
+    public void onActionMove(boolean isExpanded, TouchManager touchManager) {
+        mChromeLikeLayout.onActionMove(isExpanded, touchManager);
         ensureTarget();
         View child = mTarget;
         int currentTop = child.getTop();
         if ( mTouchManager.isBeginDragging() ) {
             if ( !isExpanded )
-                notifyOnExpandListeners( currentTop * 1.0f / sThreshold, true);
-            childOffsetTopAndBottom(currentTop, mTouchManager.getTopOffset());
+                notifyOnExpandListeners(mTouchManager.calExpandProgress(currentTop), true);
+            childOffsetTopAndBottom(mTouchManager.calTargetTopOffset(currentTop));
         }
     }
 
@@ -342,6 +328,11 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
         return new Config();
     }
 
+    /***
+     *
+     * Builder
+     *
+     * */
     public static class Config{
         private List<Integer> mIcons;
         private IOnItemSelectedListener mOnItemSelectedListener;
@@ -424,8 +415,12 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
         void onItemSelected(int index);
     }
 
+    /****
+     *
+     * Response for managing dropdown status
+     *
+     * */
     public static class StatusManager {
-
         private int mStatus = STATUS_IDLE;
         private static final int STATUS_IDLE       = 0;
         private static final int STATUS_CHANGED    = 1;

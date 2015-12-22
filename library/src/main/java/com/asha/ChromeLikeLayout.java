@@ -4,11 +4,9 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
@@ -132,10 +130,11 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         reset();
     }
 
-    public void onActionMove(MotionEvent event, int pointerIndex, boolean isExpanded){
+    public void onActionMove(boolean isExpanded, TouchManager touchManager){
         // feed MotionEvent after first expanded
+        int motionX = touchManager.getMotionX();
         if ( !mTouchHelper.isExpanded() && isExpanded ){
-            mTouchHelper.feed(event, pointerIndex);
+            mTouchHelper.feed(motionX);
             return;
         }
 
@@ -148,7 +147,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
 
         // feed the MotionEvent
         // to update mTouchHelper status.
-        mTouchHelper.feed(event, pointerIndex);
+        mTouchHelper.feed(motionX);
 
         // if not in moving status
         if ( !mTouchHelper.isMoving() ){
@@ -385,24 +384,24 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             return mStatus > STATUS_NONE;
         }
 
-        public void feed(MotionEvent event, int pointerIndex){
+        public void feed(float motionX){
             int status = mStatus;
-            float tmpX = MotionEventCompat.getX(event,pointerIndex);
+            //float tmpX = MotionEventCompat.getX(event,pointerIndex);
             switch ( status ){
                 case STATUS_NONE:
                 case STATUS_EXPANDED:
-                    mReadyPrevX = tmpX;
+                    mReadyPrevX = motionX;
                     mStatus = STATUS_READY;
                     break;
                 case STATUS_READY:
-                    if ( Math.abs(tmpX - mReadyPrevX) > mTouchSlop ){
-                        mMovingPrevX = tmpX;
-                        mMovingCurrentX = tmpX;
+                    if ( Math.abs(motionX - mReadyPrevX) > mTouchSlop ){
+                        mMovingPrevX = motionX;
+                        mMovingCurrentX = motionX;
                         mStatus = STATUS_MOVING;
                     }
                     break;
                 case STATUS_MOVING:
-                    mMovingCurrentX = tmpX;
+                    mMovingCurrentX = motionX;
                     break;
             }
         }
@@ -437,6 +436,11 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         }
     }
 
+    /***
+     *
+     * Ripple animation
+     *
+     * */
     public class RippleAnimatorHelper extends AnimationListenerAdapter {
 
         private float mAnimFromRadius;
@@ -491,7 +495,11 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         }
     }
 
-
+    /***
+     *
+     * Gummy animation
+     *
+     * */
     public class GummyAnimatorHelper extends AnimationListenerAdapter   {
 
         private float mAnimFromX;
