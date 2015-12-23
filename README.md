@@ -53,7 +53,12 @@ ChromeLikeSwipeLayout.makeConfig()
 * All ViewGroup
 
 ## Download
-Coming soon.
+```
+compile 'com.asha:chromelikeswipelayout:0.3'
+```
+
+## Release Note
+0.3 add multi touch support
 
 ##LICENSE
 ```

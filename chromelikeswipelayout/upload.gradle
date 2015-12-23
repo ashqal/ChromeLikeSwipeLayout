@@ -5,14 +5,12 @@ def siteUrl = 'https://github.com/ashqal/ChromeLikeSwipeLayout'      // Homepage
 def gitUrl = 'https://github.com/ashqal/ChromeLikeSwipeLayout.git'   // Git repository URL
 group = 'com.asha'                                        // Maven Group ID for the artifact
 
-
 install {
     repositories.mavenInstaller {
         // This generates POM.xml with proper parameters
         pom {
             project {
                 packaging 'aar'
-
                 name 'ChromeLikeSwipeLayout'
                 url siteUrl
 
