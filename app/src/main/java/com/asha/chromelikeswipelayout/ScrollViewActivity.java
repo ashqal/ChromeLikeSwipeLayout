@@ -18,7 +18,7 @@ public class ScrollViewActivity extends SubActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scrollview);
 
-        ChromeLikeSwipeLayout chromeLikeSwipeLayout = (ChromeLikeSwipeLayout) findViewById(R.id.chrome_like_swipe_layout);
+        final ChromeLikeSwipeLayout chromeLikeSwipeLayout = (ChromeLikeSwipeLayout) findViewById(R.id.chrome_like_swipe_layout);
         ChromeLikeSwipeLayout.makeConfig()
                 .addIcon(R.drawable.selector_icon_add)
                 .addIcon(R.drawable.selector_icon_close)
@@ -32,6 +32,7 @@ public class ScrollViewActivity extends SubActivity {
                     @Override
                     public void onItemSelected(int index) {
                         Toast.makeText(ScrollViewActivity.this, "onItemSelected:" + index, Toast.LENGTH_SHORT).show();
+                        chromeLikeSwipeLayout.complete();
                     }
                 })
                 .setTo(chromeLikeSwipeLayout);

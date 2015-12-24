@@ -22,7 +22,7 @@ public class RecyclerViewActivity extends SubActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recyclerview);
 
-        ChromeLikeSwipeLayout chromeLikeSwipeLayout = (ChromeLikeSwipeLayout) findViewById(R.id.chrome_like_swipe_layout);
+        final ChromeLikeSwipeLayout chromeLikeSwipeLayout = (ChromeLikeSwipeLayout) findViewById(R.id.chrome_like_swipe_layout);
         ChromeLikeSwipeLayout.makeConfig()
                 .addIcon(R.drawable.selector_icon_add)
                 .addIcon(R.drawable.selector_icon_refresh)
@@ -35,6 +35,12 @@ public class RecyclerViewActivity extends SubActivity {
                     @Override
                     public void onItemSelected(int index) {
                         Toast.makeText(RecyclerViewActivity.this, "onItemSelected:" + index, Toast.LENGTH_SHORT).show();
+                        chromeLikeSwipeLayout.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                chromeLikeSwipeLayout.complete();
+                            }
+                        },3000);
                     }
                 })
                 .setTo(chromeLikeSwipeLayout);

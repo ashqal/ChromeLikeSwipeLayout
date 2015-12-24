@@ -18,13 +18,14 @@ import com.asha.ChromeLikeSwipeLayout;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_linearlayout);
 
-        ChromeLikeSwipeLayout chromeLikeSwipeLayout = (ChromeLikeSwipeLayout) findViewById(R.id.chrome_like_swipe_layout);
+        final ChromeLikeSwipeLayout chromeLikeSwipeLayout = (ChromeLikeSwipeLayout) findViewById(R.id.chrome_like_swipe_layout);
         ChromeLikeSwipeLayout.makeConfig()
                 .addIcon(R.drawable.selector_icon_refresh)
                 .listenItemSelected(new ChromeLikeSwipeLayout.IOnItemSelectedListener() {
                     @Override
                     public void onItemSelected(int index) {
                         Toast.makeText(LinearLayoutActivity.this, "onItemSelected:" + index, Toast.LENGTH_SHORT).show();
+                        chromeLikeSwipeLayout.complete();
                     }
                 })
                 .setTo(chromeLikeSwipeLayout);

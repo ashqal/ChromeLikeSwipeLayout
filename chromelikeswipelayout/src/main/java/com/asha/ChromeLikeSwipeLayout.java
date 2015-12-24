@@ -80,9 +80,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
         mChromeLikeLayout.setRippleListener(new ChromeLikeLayout.IOnRippleListener() {
             @Override
             public void onRippleAnimFinished(int index) {
-                mStatusManager.toRestore();
-                if ( !mAnimationStarted ) launchResetAnim();
-                mTouchManager.endDrag();
+                mStatusManager.toLoading();
                 if ( mOnItemSelectedListener != null )
                     mOnItemSelectedListener.onItemSelected(index);
             }
@@ -114,15 +112,15 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
         if ( isExpanded ){
             mStatusManager.toBusy();
         } else {
-            if ( mStatusManager.isBusying() ) return;
+            if ( mStatusManager.isBusying() || mStatusManager.isLoading() ) return;
             if ( mAnimationStarted ) return;
             launchResetAnim();
             mTouchManager.endDrag();
         }
     }
 
-    private void launchResetAnim(){
-        boolean isFromCancel = !mStatusManager.isRestoring();
+    private void launchResetAnim() {
+        boolean isFromCancel = !mStatusManager.isRecovering();
         launchResetAnim(isFromCancel);
     }
 
@@ -286,30 +284,43 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
         mExpandListeners.clear();
     }
 
+    public void complete(){
+        if ( mStatusManager.isLoading() ){
+            mStatusManager.toRecovering();
+            if ( !mAnimationStarted ) launchResetAnim();
+            mTouchManager.endDrag();
+        }
+    }
+
     @Override
     public void onActionDown() {
-        mChromeLikeLayout.onActionDown();
+        if ( !mStatusManager.isLoading() )
+            mChromeLikeLayout.onActionDown();
     }
 
     @Override
     public void onActionUp(boolean isExpanded) {
-        executeAction(isExpanded);
-        mChromeLikeLayout.onActionUpOrCancel(isExpanded);
+        if ( !mStatusManager.isLoading() ){
+            executeAction(isExpanded);
+            mChromeLikeLayout.onActionUpOrCancel(isExpanded);
+        }
     }
 
     @Override
     public void onActionCancel(boolean isExpanded) {
-        mChromeLikeLayout.onActionUpOrCancel(isExpanded);
+        if ( !mStatusManager.isLoading() )
+            mChromeLikeLayout.onActionUpOrCancel(isExpanded);
     }
 
     @Override
     public void onActionMove(boolean isExpanded, TouchManager touchManager) {
-        mChromeLikeLayout.onActionMove(isExpanded, touchManager);
+        if ( !mStatusManager.isLoading() )
+            mChromeLikeLayout.onActionMove(isExpanded, touchManager);
         ensureTarget();
         View child = mTarget;
         int currentTop = child.getTop();
         if ( mTouchManager.isBeginDragging() ) {
-            if ( !isExpanded )
+            if ( !isExpanded && !mStatusManager.isLoading() )
                 notifyOnExpandListeners(mTouchManager.calExpandProgress(currentTop), true);
             childOffsetTopAndBottom(mTouchManager.calTargetTopOffset(currentTop));
         }
@@ -421,11 +432,13 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
      *
      * */
     public static class StatusManager {
-        private int mStatus = STATUS_IDLE;
-        private static final int STATUS_IDLE       = 0;
-        private static final int STATUS_CHANGED    = 1;
-        private static final int STATUS_BUSY       = 2;
-        private static final int STATUS_RESTORE    = 3;
+        private byte mStatus = STATUS_IDLE;
+        private static final byte STATUS_IDLE       = 0;
+        private static final byte STATUS_CHANGED    = 1;
+        private static final byte STATUS_BUSY       = 2;
+        private static final byte STATUS_LOADING    = 3;
+        private static final byte STATUS_RECOVERING = 4;
+
 
         public void toIdle(){
             mStatus = STATUS_IDLE;
@@ -435,8 +448,8 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
             mStatus = STATUS_BUSY;
         }
 
-        public void toRestore(){
-            mStatus = STATUS_RESTORE;
+        public void toLoading(){
+            mStatus = STATUS_LOADING;
         }
 
         public void toChanged(){
@@ -451,12 +464,20 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
             return mStatus == STATUS_BUSY;
         }
 
-        public boolean isRestoring(){
-            return mStatus == STATUS_RESTORE;
+        public void toRecovering(){
+            mStatus = STATUS_RECOVERING;
         }
 
         public boolean isIdle(){
-            return  mStatus == STATUS_IDLE;
+            return mStatus == STATUS_IDLE;
+        }
+
+        public boolean isLoading() {
+            return mStatus == STATUS_LOADING;
+        }
+
+        public boolean isRecovering() {
+            return mStatus == STATUS_RECOVERING;
         }
     }
 }

@@ -28,7 +28,7 @@ import static com.asha.ChromeLikeSwipeLayout.dp2px;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nested_recyclerview);
 
-        ChromeLikeSwipeLayout chromeLikeSwipeLayout = (ChromeLikeSwipeLayout) findViewById(R.id.chrome_like_swipe_layout);
+        final ChromeLikeSwipeLayout chromeLikeSwipeLayout = (ChromeLikeSwipeLayout) findViewById(R.id.chrome_like_swipe_layout);
         ChromeLikeSwipeLayout.makeConfig()
                 .addIcon(R.drawable.selector_icon_refresh)
                 .radius(dp2px(35))
@@ -38,6 +38,7 @@ import static com.asha.ChromeLikeSwipeLayout.dp2px;
                     @Override
                     public void onItemSelected(int index) {
                         Toast.makeText(NestedRecyclerViewActivity.this, "onItemSelected:" + index, Toast.LENGTH_SHORT).show();
+                        chromeLikeSwipeLayout.complete();
                     }
                 })
                 .setTo(chromeLikeSwipeLayout);
