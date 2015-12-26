@@ -6,9 +6,13 @@ import android.content.res.TypedArray;
 import android.graphics.PointF;
 import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
+import android.support.v4.view.NestedScrollingChildHelper;
+import android.support.v4.view.NestedScrollingParent;
+import android.support.v4.view.NestedScrollingParentHelper;
 import android.support.v4.view.ScrollingView;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -28,15 +32,17 @@ import java.util.List;
  * Created by hzqiujiadi on 15/11/20.
  * hzqiujiadi ashqalcn@gmail.com
  */
-public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITouchCallback {
+public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITouchCallback, NestedScrollingParent {
 
     private static final String TAG = "ChromeLikeSwipeLayout";
     private View mTarget; // the target of the gesture
     private ChromeLikeLayout mChromeLikeLayout;
     private int mCollapseDuration = 300;
     private boolean mAnimationStarted;
-    private StatusManager mStatusManager = new StatusManager();
-    private TouchManager mTouchManager = new TouchManager(this);
+    private final NestedScrollingChildHelper mScrollingChildHelper;
+    private final NestedScrollingParentHelper mScrollingParentHelper;
+    private final StatusManager mStatusManager = new StatusManager();
+    private final TouchManager mTouchManager = new TouchManager(this);
     private IOnItemSelectedListener mOnItemSelectedListener;
     private LinkedList<IOnExpandViewListener> mExpandListeners = new LinkedList<>();
 
@@ -70,6 +76,11 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
             ta.recycle();
         }
         config.setTo(this);
+
+        // init NestedScrollingChildHelper
+        mScrollingChildHelper = new NestedScrollingChildHelper(this);
+        mScrollingParentHelper = new NestedScrollingParentHelper(this);
+        setNestedScrollingEnabled(true);
     }
 
     private void init() {
@@ -93,6 +104,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
+        Log.d(TAG,"onInterceptTouchEvent:" + event);
         if ( mAnimationStarted ) return false;
         if ( canChildDragDown(mTouchManager.event2Point(event)) ) return false;
         return mTouchManager.onFeedInterceptEvent(event);
@@ -329,9 +341,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
     }
 
     /***
-     *
      * Builder
-     *
      * */
     public static class Config{
         private List<Integer> mIcons;
@@ -416,9 +426,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
     }
 
     /****
-     *
      * Response for managing dropdown status
-     *
      * */
     public static class StatusManager {
         private int mStatus = STATUS_IDLE;
@@ -458,5 +466,105 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
         public boolean isIdle(){
             return  mStatus == STATUS_IDLE;
         }
+    }
+
+    // NestedScrollingChild
+    @Override
+    public void setNestedScrollingEnabled(boolean enabled) {
+        mScrollingChildHelper.setNestedScrollingEnabled(enabled);
+        Log.e(TAG,"setNestedScrollingEnabled");
+    }
+
+    @Override
+    public boolean isNestedScrollingEnabled() {
+        Log.e(TAG,"isNestedScrollingEnabled");
+        return mScrollingChildHelper.isNestedScrollingEnabled();
+
+    }
+
+    @Override
+    public boolean startNestedScroll(int axes) {
+        Log.e(TAG,"startNestedScroll");
+        return mScrollingChildHelper.startNestedScroll(axes);
+    }
+
+    @Override
+    public void stopNestedScroll() {
+        Log.e(TAG,"stopNestedScroll");
+        mScrollingChildHelper.stopNestedScroll();
+    }
+
+    @Override
+    public boolean hasNestedScrollingParent() {
+        Log.e(TAG,"hasNestedScrollingParent");
+        return mScrollingChildHelper.hasNestedScrollingParent();
+    }
+
+    @Override
+    public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed,
+                                        int dyUnconsumed, int[] offsetInWindow) {
+        Log.e(TAG,"dispatchNestedScroll");
+        return mScrollingChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed,
+                dxUnconsumed, dyUnconsumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
+        Log.e(TAG,"dispatchNestedPreScroll");
+        return mScrollingChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
+        Log.e(TAG,"dispatchNestedFling");
+        return mScrollingChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
+    }
+
+    @Override
+    public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
+        Log.e(TAG,"dispatchNestedPreFling");
+        return mScrollingChildHelper.dispatchNestedPreFling(velocityX, velocityY);
+    }
+
+    // mScrollingParentHelper
+    @Override
+    public void onNestedScrollAccepted(View child, View target, int axes) {
+        mScrollingParentHelper.onNestedScrollAccepted(child, target, axes);
+    }
+
+    @Override
+    public int getNestedScrollAxes() {
+        return mScrollingParentHelper.getNestedScrollAxes();
+    }
+
+    @Override
+    public void onStopNestedScroll(View target) {
+        mScrollingParentHelper.onStopNestedScroll(target);
+    }
+
+    // do nothing now
+    @Override
+    public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
+        return super.onStartNestedScroll(child, target, nestedScrollAxes);
+    }
+
+    @Override
+    public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
+        super.onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed);
+    }
+
+    @Override
+    public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
+        super.onNestedPreScroll(target, dx, dy, consumed);
+    }
+
+    @Override
+    public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
+        return super.onNestedFling(target, velocityX, velocityY, consumed);
+    }
+
+    @Override
+    public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
+        return super.onNestedPreFling(target, velocityX, velocityY);
     }
 }
