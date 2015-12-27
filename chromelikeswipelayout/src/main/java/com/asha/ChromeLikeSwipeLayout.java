@@ -85,7 +85,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
 
     private void init() {
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
-        mTouchManager.setTouchSlop(configuration.getScaledTouchSlop());
+        mTouchManager.setTouchSlop(configuration.getScaledTouchSlop()*2);
 
         mChromeLikeLayout = new ChromeLikeLayout(getContext());
         mChromeLikeLayout.setRippleListener(new ChromeLikeLayout.IOnRippleListener() {
@@ -503,15 +503,17 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
     @Override
     public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed,
                                         int dyUnconsumed, int[] offsetInWindow) {
-        Log.e(TAG,"dispatchNestedScroll");
-        return mScrollingChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed,
+        boolean result = mScrollingChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed,
                 dxUnconsumed, dyUnconsumed, offsetInWindow);
+        Log.e(TAG,"dispatchNestedScroll:" + result);
+        return result;
     }
 
     @Override
     public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
-        Log.e(TAG,"dispatchNestedPreScroll");
-        return mScrollingChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
+        boolean result = mScrollingChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
+        Log.e(TAG,"dispatchNestedPreScroll:" + result);
+        return result;
     }
 
     @Override
@@ -529,42 +531,51 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
     // mScrollingParentHelper
     @Override
     public void onNestedScrollAccepted(View child, View target, int axes) {
+        Log.e(TAG,"onNestedScrollAccepted");
         mScrollingParentHelper.onNestedScrollAccepted(child, target, axes);
     }
 
     @Override
     public int getNestedScrollAxes() {
+        Log.e(TAG,"getNestedScrollAxes");
         return mScrollingParentHelper.getNestedScrollAxes();
     }
 
     @Override
     public void onStopNestedScroll(View target) {
+        Log.e(TAG,"onStopNestedScroll");
         mScrollingParentHelper.onStopNestedScroll(target);
     }
 
     // do nothing now
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
-        return super.onStartNestedScroll(child, target, nestedScrollAxes);
+        boolean result = this.startNestedScroll(nestedScrollAxes);
+        Log.e(TAG,"onStartNestedScroll:" + result);
+        return true;
     }
-
+    int[] offsets = new int[2];
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
-        super.onNestedScroll(target, dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed);
+        boolean result = this.dispatchNestedScroll(dxConsumed,dyConsumed,dxUnconsumed,dyUnconsumed,offsets);
+        Log.e(TAG,"onNestedScroll:" + result + "," + dxConsumed + "," + dyConsumed + "," + dxUnconsumed + "," + dyUnconsumed + "," + offsets[0] + "," + offsets[1]);
     }
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
-        super.onNestedPreScroll(target, dx, dy, consumed);
+        boolean result = this.dispatchNestedPreScroll(dx,dy,consumed,offsets);
+        Log.e(TAG,"onNestedPreScroll:" + result + "," + dx + "," + dy + "," + consumed[0] + "," +  consumed[1] + "," + offsets[0] + "," + offsets[1]);
     }
 
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
+        Log.e(TAG,"onNestedFling");
         return super.onNestedFling(target, velocityX, velocityY, consumed);
     }
 
     @Override
     public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
+        Log.e(TAG,"onNestedPreFling");
         return super.onNestedPreFling(target, velocityX, velocityY);
     }
 }
