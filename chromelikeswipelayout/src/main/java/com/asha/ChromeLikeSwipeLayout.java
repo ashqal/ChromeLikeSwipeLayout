@@ -85,7 +85,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
 
     private void init() {
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
-        mTouchManager.setTouchSlop(configuration.getScaledTouchSlop()*2);
+        mTouchManager.setTouchSlop((int) (configuration.getScaledTouchSlop() * 1.1f));
 
         mChromeLikeLayout = new ChromeLikeLayout(getContext());
         mChromeLikeLayout.setRippleListener(new ChromeLikeLayout.IOnRippleListener() {
@@ -104,7 +104,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        Log.d(TAG,"onInterceptTouchEvent:" + event);
+        //Log.d(TAG,"onInterceptTouchEvent:" + event);
         if ( mAnimationStarted ) return false;
         if ( canChildDragDown(mTouchManager.event2Point(event)) ) return false;
         return mTouchManager.onFeedInterceptEvent(event);
@@ -227,7 +227,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
     @Override
     public void requestDisallowInterceptTouchEvent(boolean b) {
         // Nope.
-        //super.requestDisallowInterceptTouchEvent(b);
+        super.requestDisallowInterceptTouchEvent(b);
     }
 
     private boolean canChildDragDown(PointF pointF){
@@ -545,19 +545,26 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
     public void onStopNestedScroll(View target) {
         Log.e(TAG,"onStopNestedScroll");
         mScrollingParentHelper.onStopNestedScroll(target);
+        //mTouchManager.setInterceptEnabled(true);
     }
 
     // do nothing now
     @Override
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
         boolean result = this.startNestedScroll(nestedScrollAxes);
+        if ( result ) mTouchManager.setInterceptEnabled(false);
         Log.e(TAG,"onStartNestedScroll:" + result);
         return true;
     }
     int[] offsets = new int[2];
+
     @Override
     public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
         boolean result = this.dispatchNestedScroll(dxConsumed,dyConsumed,dxUnconsumed,dyUnconsumed,offsets);
+        if ( result ){
+            boolean consumed = (offsets[1] + dyUnconsumed) == 0 && dyUnconsumed != 0;
+            mTouchManager.setInterceptEnabled( !consumed );
+        }
         Log.e(TAG,"onNestedScroll:" + result + "," + dxConsumed + "," + dyConsumed + "," + dxUnconsumed + "," + dyUnconsumed + "," + offsets[0] + "," + offsets[1]);
     }
 

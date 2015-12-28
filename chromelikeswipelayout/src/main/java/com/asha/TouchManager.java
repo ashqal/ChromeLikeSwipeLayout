@@ -22,6 +22,7 @@ public class TouchManager {
     private static final int sThreshold = dp2px(120);
     private static final int sThreshold2 = dp2px(400);
     private int mMotionX;
+    private boolean mInterceptEnabled = true;
 
     public TouchManager(ITouchCallback mTouchHelper) {
         this.mTouchCallback = mTouchHelper;
@@ -158,7 +159,7 @@ public class TouchManager {
                 }
                 // if diff > mTouchSlop
                 // let's drag!
-                if ( !mBeginDragging && y - mTouchDownActor > mTouchSlop ) {
+                if ( mInterceptEnabled && !mBeginDragging && y - mTouchDownActor > mTouchSlop ) {
                     mBeginDragging = true;
                     if (mTouchCallback != null) mTouchCallback.onBeginDragging();
                 }
@@ -217,6 +218,10 @@ public class TouchManager {
 
     public int getMotionX() {
         return mMotionX;
+    }
+
+    public void setInterceptEnabled(boolean interceptEnabled) {
+        this.mInterceptEnabled = interceptEnabled;
     }
 
     public interface ITouchCallback {
