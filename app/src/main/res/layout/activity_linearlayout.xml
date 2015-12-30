@@ -50,6 +50,21 @@
                 android:layout_height="100dp"
                 android:gravity="center"
                 android:text="I am in LinearLayout" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:gravity="center"
+                android:text="I am in LinearLayout" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:gravity="center"
+                android:text="I am in LinearLayout" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:gravity="center"
+                android:text="I am in LinearLayout" />
         </LinearLayout>
     </com.asha.ChromeLikeSwipeLayout>
 </android.support.design.widget.CoordinatorLayout>

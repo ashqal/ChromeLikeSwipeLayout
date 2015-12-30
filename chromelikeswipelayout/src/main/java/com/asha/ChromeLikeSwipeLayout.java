@@ -12,7 +12,6 @@ import android.support.v4.view.NestedScrollingParentHelper;
 import android.support.v4.view.ScrollingView;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -472,31 +471,31 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
     @Override
     public void setNestedScrollingEnabled(boolean enabled) {
         mScrollingChildHelper.setNestedScrollingEnabled(enabled);
-        Log.e(TAG,"setNestedScrollingEnabled");
+        // Log.e(TAG,"setNestedScrollingEnabled");
     }
 
     @Override
     public boolean isNestedScrollingEnabled() {
-        Log.e(TAG,"isNestedScrollingEnabled");
+        // Log.e(TAG,"isNestedScrollingEnabled");
         return mScrollingChildHelper.isNestedScrollingEnabled();
 
     }
 
     @Override
     public boolean startNestedScroll(int axes) {
-        Log.e(TAG,"startNestedScroll");
+        // Log.e(TAG,"startNestedScroll");
         return mScrollingChildHelper.startNestedScroll(axes);
     }
 
     @Override
     public void stopNestedScroll() {
-        Log.e(TAG,"stopNestedScroll");
+        // Log.e(TAG,"stopNestedScroll");
         mScrollingChildHelper.stopNestedScroll();
     }
 
     @Override
     public boolean hasNestedScrollingParent() {
-        Log.e(TAG,"hasNestedScrollingParent");
+        // Log.e(TAG,"hasNestedScrollingParent");
         return mScrollingChildHelper.hasNestedScrollingParent();
     }
 
@@ -505,47 +504,46 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
                                         int dyUnconsumed, int[] offsetInWindow) {
         boolean result = mScrollingChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed,
                 dxUnconsumed, dyUnconsumed, offsetInWindow);
-        Log.e(TAG,"dispatchNestedScroll:" + result);
+        //Log.e(TAG,"dispatchNestedScroll:" + result);
         return result;
     }
 
     @Override
     public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
         boolean result = mScrollingChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
-        Log.e(TAG,"dispatchNestedPreScroll:" + result);
+        //Log.e(TAG,"dispatchNestedPreScroll:" + result);
         return result;
     }
 
     @Override
     public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
-        Log.e(TAG,"dispatchNestedFling");
+        //Log.e(TAG,"dispatchNestedFling");
         return mScrollingChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
     }
 
     @Override
     public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
-        Log.e(TAG,"dispatchNestedPreFling");
+        //Log.e(TAG,"dispatchNestedPreFling");
         return mScrollingChildHelper.dispatchNestedPreFling(velocityX, velocityY);
     }
 
     // mScrollingParentHelper
     @Override
     public void onNestedScrollAccepted(View child, View target, int axes) {
-        Log.e(TAG,"onNestedScrollAccepted");
+        //Log.e(TAG,"onNestedScrollAccepted");
         mScrollingParentHelper.onNestedScrollAccepted(child, target, axes);
     }
 
     @Override
     public int getNestedScrollAxes() {
-        Log.e(TAG,"getNestedScrollAxes");
+        //Log.e(TAG,"getNestedScrollAxes");
         return mScrollingParentHelper.getNestedScrollAxes();
     }
 
     @Override
     public void onStopNestedScroll(View target) {
-        Log.e(TAG,"onStopNestedScroll");
+        //Log.e(TAG,"onStopNestedScroll");
         mScrollingParentHelper.onStopNestedScroll(target);
-        //mTouchManager.setInterceptEnabled(true);
     }
 
     // do nothing now
@@ -553,7 +551,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
     public boolean onStartNestedScroll(View child, View target, int nestedScrollAxes) {
         boolean result = this.startNestedScroll(nestedScrollAxes);
         if ( result ) mTouchManager.setInterceptEnabled(false);
-        Log.e(TAG,"onStartNestedScroll:" + result);
+        //Log.e(TAG,"onStartNestedScroll:" + result);
         return true;
     }
     int[] offsets = new int[2];
@@ -565,24 +563,24 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
             boolean consumed = (offsets[1] + dyUnconsumed) == 0 && dyUnconsumed != 0;
             mTouchManager.setInterceptEnabled( !consumed );
         }
-        Log.e(TAG,"onNestedScroll:" + result + "," + dxConsumed + "," + dyConsumed + "," + dxUnconsumed + "," + dyUnconsumed + "," + offsets[0] + "," + offsets[1]);
+        //Log.e(TAG,"onNestedScroll:" + result + "," + dxConsumed + "," + dyConsumed + "," + dxUnconsumed + "," + dyUnconsumed + "," + offsets[0] + "," + offsets[1]);
     }
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
         boolean result = this.dispatchNestedPreScroll(dx,dy,consumed,offsets);
-        Log.e(TAG,"onNestedPreScroll:" + result + "," + dx + "," + dy + "," + consumed[0] + "," +  consumed[1] + "," + offsets[0] + "," + offsets[1]);
+        //Log.e(TAG,"onNestedPreScroll:" + result + "," + dx + "," + dy + "," + consumed[0] + "," +  consumed[1] + "," + offsets[0] + "," + offsets[1]);
     }
 
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
-        Log.e(TAG,"onNestedFling");
+        // Log.e(TAG,"onNestedFling");
         return super.onNestedFling(target, velocityX, velocityY, consumed);
     }
 
     @Override
     public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
-        Log.e(TAG,"onNestedPreFling");
+        //Log.e(TAG,"onNestedPreFling");
         return super.onNestedPreFling(target, velocityX, velocityY);
     }
 }
