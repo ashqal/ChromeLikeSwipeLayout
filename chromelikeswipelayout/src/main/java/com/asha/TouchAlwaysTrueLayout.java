@@ -120,59 +120,48 @@ public class TouchAlwaysTrueLayout extends ViewGroup implements NestedScrollingC
     @Override
     public void setNestedScrollingEnabled(boolean enabled) {
         mScrollingChildHelper.setNestedScrollingEnabled(enabled);
-        // Log.e(TAG,"setNestedScrollingEnabled");
     }
 
     @Override
     public boolean isNestedScrollingEnabled() {
-        // Log.e(TAG,"isNestedScrollingEnabled");
         return mScrollingChildHelper.isNestedScrollingEnabled();
 
     }
 
     @Override
     public boolean startNestedScroll(int axes) {
-        // Log.e(TAG,"startNestedScroll");
         return mScrollingChildHelper.startNestedScroll(axes);
     }
 
     @Override
     public void stopNestedScroll() {
-        // Log.e(TAG,"stopNestedScroll");
         mScrollingChildHelper.stopNestedScroll();
     }
 
     @Override
     public boolean hasNestedScrollingParent() {
-        // Log.e(TAG,"hasNestedScrollingParent");
         return mScrollingChildHelper.hasNestedScrollingParent();
     }
 
     @Override
     public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed,
                                         int dyUnconsumed, int[] offsetInWindow) {
-        boolean result = mScrollingChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed,
+        return mScrollingChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed,
                 dxUnconsumed, dyUnconsumed, offsetInWindow);
-        //Log.e(TAG,"dispatchNestedScroll:" + result);
-        return result;
     }
 
     @Override
     public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
-        boolean result = mScrollingChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
-        //Log.e(TAG,"dispatchNestedPreScroll:" + result);
-        return result;
+        return mScrollingChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
     }
 
     @Override
     public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
-        //Log.e(TAG,"dispatchNestedFling");
         return mScrollingChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
     }
 
     @Override
     public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
-        //Log.e(TAG,"dispatchNestedPreFling");
         return mScrollingChildHelper.dispatchNestedPreFling(velocityX, velocityY);
     }
 }
