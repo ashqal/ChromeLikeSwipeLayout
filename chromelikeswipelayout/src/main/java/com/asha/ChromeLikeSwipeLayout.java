@@ -60,18 +60,18 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
         Config config = makeConfig();
         TypedArray ta = context.getTheme().obtainStyledAttributes(attrs, R.styleable.ChromeLikeSwipeLayout,defStyleAttr,0);
         if ( ta != null ){
-            if (ta.hasValue(R.styleable.ChromeLikeSwipeLayout_circleColor))
-                config.circleColor(ta.getColor(R.styleable.ChromeLikeSwipeLayout_circleColor,Config.DEFAULT));
-            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_gap))
-                config.gap(ta.getDimensionPixelOffset(R.styleable.ChromeLikeSwipeLayout_gap,Config.DEFAULT));
-            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_radius))
-                config.radius(ta.getDimensionPixelOffset(R.styleable.ChromeLikeSwipeLayout_radius,Config.DEFAULT));
-            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_collapseDuration))
-                config.collapseDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_collapseDuration,Config.DEFAULT));
-            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_rippleDuration))
-                config.rippleDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_rippleDuration,Config.DEFAULT));
-            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_gummyDuration))
-                config.gummyDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_gummyDuration,Config.DEFAULT));
+            if (ta.hasValue(R.styleable.ChromeLikeSwipeLayout_clwl_circleColor))
+                config.circleColor(ta.getColor(R.styleable.ChromeLikeSwipeLayout_clwl_circleColor,Config.DEFAULT));
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_clwl_gap))
+                config.gap(ta.getDimensionPixelOffset(R.styleable.ChromeLikeSwipeLayout_clwl_gap,Config.DEFAULT));
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_clwl_radius))
+                config.radius(ta.getDimensionPixelOffset(R.styleable.ChromeLikeSwipeLayout_clwl_radius,Config.DEFAULT));
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_clwl_collapseDuration))
+                config.collapseDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_clwl_collapseDuration,Config.DEFAULT));
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_clwl_rippleDuration))
+                config.rippleDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_clwl_rippleDuration,Config.DEFAULT));
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_clwl_gummyDuration))
+                config.gummyDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_clwl_gummyDuration,Config.DEFAULT));
             ta.recycle();
         }
         config.setTo(this);

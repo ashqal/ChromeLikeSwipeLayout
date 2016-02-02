@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="ChromeLikeSwipeLayout">
-        <attr name="radius" format="dimension" />
-        <attr name="gap" format="dimension" />
-        <attr name="circleColor" format="color" />
-        <attr name="collapseDuration" format="integer" />
-        <attr name="rippleDuration" format="integer" />
-        <attr name="gummyDuration" format="integer" />
+        <attr name="clwl_radius" format="dimension" />
+        <attr name="clwl_gap" format="dimension" />
+        <attr name="clwl_circleColor" format="color" />
+        <attr name="clwl_collapseDuration" format="integer" />
+        <attr name="clwl_rippleDuration" format="integer" />
+        <attr name="clwl_gummyDuration" format="integer" />
     </declare-styleable>
 </resources>

@@ -9,12 +9,12 @@ Pull down, and execute more action!
 ```java
 <com.asha.ChromeLikeSwipeLayout
     android:id="@+id/chrome_like_swipe_layout"
-    app:circleColor="#89d999"
-    app:gap="0dp"
-    app:radius="45dp"
-    app:collapseDuration="300"
-    app:rippleDuration="300"
-    app:gummyDuration="300"
+    app:clwl_circleColor="#89d999"
+    app:clwl_gap="0dp"
+    app:clwl_radius="45dp"
+    app:clwl_collapseDuration="300"
+    app:clwl_rippleDuration="300"
+    app:clwl_gummyDuration="300"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <LinearLayout
