@@ -23,7 +23,7 @@ Pull down, and execute more action!
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#DDDDDD">
-       ...
+       ...	
     </LinearLayout>
 </com.asha.ChromeLikeSwipeLayout>
 ```
@@ -56,7 +56,13 @@ ChromeLikeSwipeLayout.makeConfig()
 
 ## Download
 ```
-compile 'com.asha:chromelikeswipelayout:0.3'
+   repositories { 
+        jcenter()
+        maven { url "https://jitpack.io" }
+   }
+   dependencies {
+         compile 'com.github.ashqal:ChromeLikeSwipeLayout:<version>'
+   }
 ```
 
 ## Release Note

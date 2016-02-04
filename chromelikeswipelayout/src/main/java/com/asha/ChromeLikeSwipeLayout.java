@@ -71,9 +71,9 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
             if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_clwl_rippleDuration))
                 config.rippleDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_clwl_rippleDuration,Config.DEFAULT));
             if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_clwl_gummyDuration))
-                config.setMaxHeight(ta.getInt(R.styleable.ChromeLikeSwipeLayout_clwl_gummyDuration,Config.DEFAULT));
+                config.gummyDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_clwl_gummyDuration,Config.DEFAULT));
             if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_clwl_maxHeight))
-                config.setMaxHeight(ta.getInt(R.styleable.ChromeLikeSwipeLayout_clwl_maxHeight,Config.DEFAULT));
+                config.setMaxHeight(ta.getDimensionPixelOffset(R.styleable.ChromeLikeSwipeLayout_clwl_maxHeight,Config.DEFAULT));
             ta.recycle();
         }
         config.setTo(this);
