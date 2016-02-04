@@ -12,6 +12,7 @@ Pull down, and execute more action!
     app:clwl_circleColor="#89d999"
     app:clwl_gap="0dp"
     app:clwl_radius="45dp"
+    app:clwl_maxHeight="30dp"
     app:clwl_collapseDuration="300"
     app:clwl_rippleDuration="300"
     app:clwl_gummyDuration="300"
@@ -34,6 +35,7 @@ ChromeLikeSwipeLayout.makeConfig()
         .addIcon(R.drawable.selector_icon_add)
         .addIcon(R.drawable.selector_icon_refresh)
         .addIcon(R.drawable.selector_icon_close)
+	.maxHeight(dp2px(40))
         .radius(dp2px(35))
         .gap(dp2px(5))
         .circleColor(0xFF11CCFF)

@@ -7,5 +7,6 @@
         <attr name="clwl_collapseDuration" format="integer" />
         <attr name="clwl_rippleDuration" format="integer" />
         <attr name="clwl_gummyDuration" format="integer" />
+        <attr name="clwl_maxHeight" format="dimension" />
     </declare-styleable>
 </resources>

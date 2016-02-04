@@ -20,6 +20,7 @@
         <activity android:name=".ListViewActivity" android:label="ListViewActivity"/>
         <activity android:name=".RecyclerViewActivity" android:label="RecyclerViewActivity"/>
         <activity android:name=".NestedRecyclerViewActivity" android:label="NestedRecyclerViewActivity"/>
+        <activity android:name=".CustomHeightListViewActivity" android:label="CustomHeightListViewActivity"/>
     </application>
 
 </manifest>
