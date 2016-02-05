@@ -72,6 +72,8 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
                 config.rippleDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_clwl_rippleDuration,Config.DEFAULT));
             if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_clwl_gummyDuration))
                 config.gummyDuration(ta.getInt(R.styleable.ChromeLikeSwipeLayout_clwl_gummyDuration,Config.DEFAULT));
+            if ( ta.hasValue(R.styleable.ChromeLikeSwipeLayout_clwl_maxHeight))
+                config.setMaxHeight(ta.getDimensionPixelOffset(R.styleable.ChromeLikeSwipeLayout_clwl_maxHeight,Config.DEFAULT));
             ta.recycle();
         }
         config.setTo(this);
@@ -275,6 +277,8 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
             mChromeLikeLayout.setGummyDuration(config.mGummyDuration);
         if ( config.mCollapseDuration != Config.DEFAULT )
             setCollapseDuration(config.mCollapseDuration);
+        if ( config.maxHeight != Config.DEFAULT )
+            mTouchManager.setMaxHeight(config.maxHeight);
 
         mOnItemSelectedListener = config.mOnItemSelectedListener;
     }
@@ -353,6 +357,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
         private int mCollapseDuration = DEFAULT;
         private int mRippleDuration = DEFAULT;
         private int mGummyDuration = DEFAULT;
+        private int maxHeight = DEFAULT;
         private static final int DEFAULT = -1;
 
         private Config(){
@@ -410,9 +415,15 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
             return this;
         }
 
+        public Config setMaxHeight(int maxHeight) {
+            this.maxHeight = maxHeight;
+            return this;
+        }
+
         public void setTo(ChromeLikeSwipeLayout chromeLikeSwipeLayout){
             chromeLikeSwipeLayout.setConfig(this);
         }
+
     }
 
     public static int dp2px(float valueInDp) {

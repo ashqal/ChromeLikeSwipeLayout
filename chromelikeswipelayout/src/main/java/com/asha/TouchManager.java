@@ -19,7 +19,7 @@ public class TouchManager {
     private int mActivePointerId = INVALID_POINTER;
     private PointF mTmpPoint = new PointF();
     private ITouchCallback mTouchCallback;
-    private static final int sThreshold = dp2px(120);
+    private int sThreshold = dp2px(120);
     private static final int sThreshold2 = dp2px(400);
     private int mMotionX;
     private boolean mInterceptEnabled = true;
@@ -222,6 +222,10 @@ public class TouchManager {
 
     public void setInterceptEnabled(boolean interceptEnabled) {
         this.mInterceptEnabled = interceptEnabled;
+    }
+
+    public void setMaxHeight(int maxHeight) {
+        this.sThreshold = maxHeight;
     }
 
     public interface ITouchCallback {
