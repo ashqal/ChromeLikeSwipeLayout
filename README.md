@@ -66,7 +66,16 @@ ChromeLikeSwipeLayout.makeConfig()
 ```
 
 ## Release Note
-0.3 add multi touch support
+
+**0.4**
+* maxHeight supported(Thanks to  [Tommy Chan](https://github.com/tommytcchan)).
+* Using `jitpack` instead of jCenter
+* NestedScroll supported.
+* Fix a few bugs.
+
+
+**0.3**
+* add multi touch support
 
 ##LICENSE
 ```
