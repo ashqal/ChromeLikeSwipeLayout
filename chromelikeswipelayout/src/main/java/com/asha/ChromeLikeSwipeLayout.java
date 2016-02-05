@@ -570,11 +570,11 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
 
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
-        return super.onNestedFling(target, velocityX, velocityY, consumed);
+        return false;
     }
 
     @Override
     public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
-        return super.onNestedPreFling(target, velocityX, velocityY);
+        return false;
     }
 }

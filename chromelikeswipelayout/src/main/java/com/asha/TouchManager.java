@@ -19,7 +19,7 @@ public class TouchManager {
     private int mActivePointerId = INVALID_POINTER;
     private PointF mTmpPoint = new PointF();
     private ITouchCallback mTouchCallback;
-    private int sThreshold = dp2px(120);
+    private int mThreshold = dp2px(120);
     private static final int sThreshold2 = dp2px(400);
     private int mMotionX;
     private boolean mInterceptEnabled = true;
@@ -69,7 +69,7 @@ public class TouchManager {
     }
 
     public float calExpandProgress(int currentTop){
-        return currentTop * 1.0f / sThreshold;
+        return currentTop * 1.0f / mThreshold;
     }
 
     public int calTargetTopOffset(int currentTop){
@@ -113,8 +113,8 @@ public class TouchManager {
         float diff;
         if ( mTopOffset < 0 ){
             diff = 0;
-        } else if( mTopOffset > sThreshold ){
-            diff = (mTopOffset - sThreshold ) / 0.3f / 0.6f + sThreshold / 0.6f;
+        } else if( mTopOffset > mThreshold){
+            diff = (mTopOffset - mThreshold) / 0.3f / 0.6f + mThreshold / 0.6f;
         } else {
             diff = mTopOffset / 0.6f;
         }
@@ -124,8 +124,8 @@ public class TouchManager {
     private int motionY2TopOffset(float y){
         float original = y - mTouchDownActor;
         float basic = original * 0.6f;
-        if ( basic > sThreshold ){
-            basic = sThreshold + (basic - sThreshold) * 0.3f;
+        if ( basic > mThreshold){
+            basic = mThreshold + (basic - mThreshold) * 0.3f;
         }
         return (int) basic;
     }
@@ -183,7 +183,7 @@ public class TouchManager {
         final float y = MotionEventCompat.getY(event, pointerIndex);
         setTopOffset(y);
 
-        boolean isExpanded = mTopOffset >= sThreshold && mBeginDragging;
+        boolean isExpanded = mTopOffset >= mThreshold && mBeginDragging;
         //first point
 
         switch ( action ) {
@@ -225,7 +225,7 @@ public class TouchManager {
     }
 
     public void setMaxHeight(int maxHeight) {
-        this.sThreshold = maxHeight;
+        this.mThreshold = maxHeight;
     }
 
     public interface ITouchCallback {
