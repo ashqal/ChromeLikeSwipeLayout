@@ -56,13 +56,17 @@ ChromeLikeSwipeLayout.makeConfig()
 
 ## Download
 ```
-   repositories { 
+allprojects {
+    repositories {
         jcenter()
         maven { url "https://jitpack.io" }
-   }
-   dependencies {
-         compile 'com.github.ashqal:ChromeLikeSwipeLayout:<version>'
-   }
+    }
+}
+```
+```
+dependencies {
+ compile 'com.github.ashqal:ChromeLikeSwipeLayout:<version>'
+}
 ```
 
 ## Release Note
