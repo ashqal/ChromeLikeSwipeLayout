@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.PointF;
+import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.DrawableRes;
 import android.support.v4.view.NestedScrollingChildHelper;
@@ -570,11 +571,17 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
 
     @Override
     public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
-        return super.onNestedFling(target, velocityX, velocityY, consumed);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return super.onNestedFling(target, velocityX, velocityY, consumed);
+        }
+        return false;
     }
 
     @Override
     public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
-        return super.onNestedPreFling(target, velocityX, velocityY);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return super.onNestedPreFling(target, velocityX, velocityY);
+        }
+        return false;
     }
 }
