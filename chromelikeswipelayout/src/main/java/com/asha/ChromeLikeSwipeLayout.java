@@ -44,6 +44,7 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
     private final TouchManager mTouchManager = new TouchManager(this);
     private IOnItemSelectedListener mOnItemSelectedListener;
     private LinkedList<IOnExpandViewListener> mExpandListeners = new LinkedList<>();
+    private boolean mEnabled = true;
 
     public ChromeLikeSwipeLayout(Context context) {
         this(context, null);
@@ -104,8 +105,14 @@ public class ChromeLikeSwipeLayout extends ViewGroup implements TouchManager.ITo
     }
 
     @Override
+    public void setEnabled(boolean enabled) {
+        mEnabled = enabled;
+    }
+
+    @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
         //Log.d(TAG,"onInterceptTouchEvent:" + event);
+        if (!mEnabled) return false;
         if ( mAnimationStarted ) return false;
         if ( canChildDragDown(mTouchManager.event2Point(event)) ) return false;
         return mTouchManager.onFeedInterceptEvent(event);

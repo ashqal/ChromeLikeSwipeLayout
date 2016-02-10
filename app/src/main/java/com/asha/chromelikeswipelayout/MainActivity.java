@@ -46,4 +46,9 @@ public class MainActivity extends AppCompatActivity {
         Intent i = new Intent(this,CustomHeightListViewActivity.class);
         startActivity(i);
     }
+
+    public void OnDisabledExampleClicked(View view) {
+        Intent i = new Intent(this, DisabledExampleActivity.class);
+        startActivity(i);
+    }
 }

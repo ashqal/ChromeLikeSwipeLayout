@@ -21,6 +21,7 @@
         <activity android:name=".RecyclerViewActivity" android:label="RecyclerViewActivity"/>
         <activity android:name=".NestedRecyclerViewActivity" android:label="NestedRecyclerViewActivity"/>
         <activity android:name=".CustomHeightListViewActivity" android:label="CustomHeightListViewActivity"/>
+        <activity android:name=".DisabledExampleActivity" android:label="DisabledExampleActivity"/>
     </application>
 
 </manifest>
