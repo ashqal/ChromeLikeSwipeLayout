@@ -31,6 +31,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     private static final int sDefaultCircleColor = 0xFFFFCC11;
     private static final int sDefaultBackgroundColor = 0xFF333333;
     private static final float sThreshold = 0.5f;
+    private Threshold mAnimCancelThreshold;
     private Paint mPaint;
     private Path mPath;
     private float mDegrees;
@@ -92,6 +93,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     private void init() {
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mTouchHelper = new TouchHelper(configuration.getScaledTouchSlop());
+        mAnimCancelThreshold = new Threshold(configuration.getScaledTouchSlop() * 1.1f);
 
         setBackgroundColor(sDefaultBackgroundColor);
 
@@ -158,7 +160,11 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         }
 
         if ( mGummyAnimatorHelper.isAnimationStarted() ){
-            mGummyAnimatorHelper.updateFromX(mTouchHelper.getCurrentX());
+            float currentX = mTouchHelper.getCurrentX();
+            if (mAnimCancelThreshold.absOverflow(currentX)) {
+                mGummyAnimatorHelper.end();
+                mTouchHelper.resetToReady(mTouchHelper.getCurrentX());
+            }
             return;
         }
 
@@ -181,6 +187,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         if ( Math.abs( currentX -  prevX ) > getItemWidth() * sThreshold ){
             if ( currentX > prevX ) updateCurrentFlag(nextOfCurrentFlag());
             else updateCurrentFlag(prevOfCurrentFlag());
+            mAnimCancelThreshold.reset();
             mGummyAnimatorHelper.launchAnim(
                     currentX
                     , prevX
@@ -414,9 +421,9 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             return mMovingCurrentX;
         }
 
-        public void resetToReady(float mAnimFromX){
+        public void resetToReady(float animFromX){
             mStatus = STATUS_READY;
-            mReadyPrevX = mAnimFromX;
+            mReadyPrevX = animFromX;
         }
 
         public void reset(){
@@ -433,6 +440,35 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         public void testRightEdge() {
             if ( mMovingCurrentX > mMovingPrevX )
                 mMovingPrevX = mMovingCurrentX;
+        }
+    }
+
+    public static class Threshold {
+        private boolean mInit;
+        private float mPrev;
+        private float mThreshold;
+
+        public Threshold(float threshold) {
+            this.mThreshold = threshold;
+        }
+
+        private boolean checkAbsOverflow(float now){
+            if (Math.abs(now - mPrev) > mThreshold) return true;
+            else return false;
+        }
+
+        public boolean absOverflow(float value){
+            if (!mInit){
+                mPrev = value;
+                mInit = true;
+                return false;
+            }
+            return checkAbsOverflow(value);
+        }
+
+        public void reset(){
+            mInit = false;
+            mPrev = 0;
         }
     }
 
@@ -532,7 +568,6 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             animation.setAnimationListener(this);
             ChromeLikeLayout.this.clearAnimation();
             ChromeLikeLayout.this.startAnimation(animation);
-            mAnimationStarted = true;
         }
 
         public boolean isAnimationStarted() {
@@ -544,9 +579,16 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         }
 
         @Override
+        public void onAnimationStart(Animation animation) {
+            mAnimationStarted = true;
+        }
+
+        @Override
         public void onAnimationEnd(Animation animation) {
-            mAnimationStarted = false;
-            mTouchHelper.resetToReady(mAnimFromX);
+            if (mAnimationStarted){
+                mTouchHelper.resetToReady(mAnimFromX);
+                mAnimationStarted = false;
+            }
         }
 
         public void setDuration(int duration) {
@@ -554,7 +596,12 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         }
 
         public void end() {
+            // false immediately
+            mAnimationStarted = false;
+
+            // clear animation
             ChromeLikeLayout.this.clearAnimation();
+
             // anim to end immediately
             onAnimationUpdate(1);
         }
