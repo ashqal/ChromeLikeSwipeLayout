@@ -31,6 +31,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     private static final int sDefaultCircleColor = 0xFFFFCC11;
     private static final int sDefaultBackgroundColor = 0xFF333333;
     private static final float sThreshold = 0.5f;
+    private static final float sAnimCancelThreshold = 0.75f;
     private Threshold mAnimCancelThreshold;
     private Paint mPaint;
     private Path mPath;
@@ -59,6 +60,10 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
 
     private int getItemWidth(){
         return mRadius*2 + mGap;
+    }
+
+    private float getMovingThreshold() {
+        return getItemWidth() * sThreshold;
     }
 
     private int getCircleStartX(){
@@ -93,7 +98,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
     private void init() {
         final ViewConfiguration configuration = ViewConfiguration.get(getContext());
         mTouchHelper = new TouchHelper(configuration.getScaledTouchSlop());
-        mAnimCancelThreshold = new Threshold(configuration.getScaledTouchSlop() * 1.1f);
+        mAnimCancelThreshold = new Threshold(getMovingThreshold() * sAnimCancelThreshold);
 
         setBackgroundColor(sDefaultBackgroundColor);
 
@@ -163,7 +168,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             float currentX = mTouchHelper.getCurrentX();
             if (mAnimCancelThreshold.absOverflow(currentX)) {
                 mGummyAnimatorHelper.end();
-                mTouchHelper.resetToReady(mTouchHelper.getCurrentX());
+                mTouchHelper.resetToReady(currentX);
             }
             return;
         }
@@ -184,7 +189,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         updateIconScale(1);
 
         // if diff > threshold, update translate
-        if ( Math.abs( currentX -  prevX ) > getItemWidth() * sThreshold ){
+        if ( Math.abs( currentX -  prevX ) > getMovingThreshold() ){
             if ( currentX > prevX ) updateCurrentFlag(nextOfCurrentFlag());
             else updateCurrentFlag(prevOfCurrentFlag());
             mAnimCancelThreshold.reset();
@@ -477,7 +482,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
      * Ripple animation
      *
      * */
-    public class RippleAnimatorHelper extends AnimationListenerAdapter {
+    private class RippleAnimatorHelper extends AnimationListenerAdapter {
 
         private float mAnimFromRadius;
         private float mAnimToRadius;
@@ -536,7 +541,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
      * Gummy animation
      *
      * */
-    public class GummyAnimatorHelper extends AnimationListenerAdapter   {
+    private class GummyAnimatorHelper extends AnimationListenerAdapter   {
 
         private float mAnimFromX;
         private float mAnimToX;
@@ -568,19 +573,17 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
             animation.setAnimationListener(this);
             ChromeLikeLayout.this.clearAnimation();
             ChromeLikeLayout.this.startAnimation(animation);
+
+            mAnimationStarted = true;
         }
 
         public boolean isAnimationStarted() {
             return mAnimationStarted;
         }
 
-        public void updateFromX(float currentX) {
-            mAnimFromX = currentX;
-        }
-
         @Override
         public void onAnimationStart(Animation animation) {
-            mAnimationStarted = true;
+
         }
 
         @Override
@@ -607,8 +610,7 @@ public class ChromeLikeLayout extends ViewGroup implements IOnExpandViewListener
         }
     }
 
-    public static class FloatEvaluator {
-
+    private static class FloatEvaluator {
         public static Float evaluate(float fraction, Number startValue, Number endValue) {
             float startFloat = startValue.floatValue();
             return startFloat + fraction * (endValue.floatValue() - startFloat);
