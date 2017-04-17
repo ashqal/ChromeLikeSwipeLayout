@@ -81,7 +81,7 @@ dependencies {
 **0.3**
 * add multi touch support
 
-##LICENSE
+## LICENSE
 ```
 Copyright 2015 Asha
 
